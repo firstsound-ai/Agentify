@@ -1,13 +1,9 @@
 import json
-from typing import TYPE_CHECKING
 
 from fastapi import BackgroundTasks
 from langchain_core.runnables.config import RunnableConfig
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-
-if TYPE_CHECKING:
-    from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from biz.agent.requirement.state import GraphState
 from common.dto.requirement import (
@@ -25,12 +21,11 @@ from dal.database import get_db
 
 class RequirementBIZ:
     @staticmethod
-    async def create_requirement(
+    def create_requirement(
         db: Session,
         requirement: RequirementCreate,
         user_info: UserInfo,
         background_tasks: BackgroundTasks,
-        checkpointer: "AsyncPostgresSaver",
     ):
         try:
             with db.begin():
@@ -52,7 +47,6 @@ class RequirementBIZ:
                             thread_id,
                             requirement.initial_requirement,
                             new_db,
-                            checkpointer,
                         )
                     )
                 finally:
@@ -118,7 +112,6 @@ class RequirementBIZ:
         thread_id: str,
         initial_requirement: str,
         db: Session,
-        checkpointer: "AsyncPostgresSaver",
     ):
         """处理需求的后台任务 - 使用LangGraph invoke执行工作流"""
 
@@ -127,10 +120,9 @@ class RequirementBIZ:
                 db, thread_id, TaskStatus.PROCESSING, "开始处理需求..."
             )
 
-            # 获取LangGraph应用
-            from biz.agent.requirement.graph import get_requirement_app
+            from biz.agent.requirement.graph import get_requirement_workflow
 
-            app = await get_requirement_app(checkpointer)
+            app = get_requirement_workflow()
 
             # 构建初始状态
             initial_state: GraphState = {
@@ -147,7 +139,7 @@ class RequirementBIZ:
 
             # 使用LangGraph的invoke方法执行工作流
             # 这会自动执行到interrupt点（user_answers_node）
-            result = await app.ainvoke(initial_state, config=config)
+            result = app.invoke(initial_state, config=config)
 
             # 检查执行结果
             if result.get("error"):
@@ -193,7 +185,6 @@ class RequirementBIZ:
         user_answers: UserAnswers,
         user_info: UserInfo,
         background_tasks: BackgroundTasks,
-        checkpointer: "AsyncPostgresSaver",
     ):
         """提交用户答案并继续处理"""
         try:
@@ -233,7 +224,7 @@ class RequirementBIZ:
                 try:
                     loop.run_until_complete(
                         RequirementBIZ._continue_requirement_task(
-                            thread_id, user_answers.answers, new_db, checkpointer
+                            thread_id, user_answers.answers, new_db
                         )
                     )
                 finally:
@@ -253,15 +244,13 @@ class RequirementBIZ:
         thread_id: str,
         user_answers: dict,
         db: Session,
-        checkpointer: "AsyncPostgresSaver",
     ):
         """继续处理需求任务 - 恢复LangGraph执行并提供用户答案"""
 
         try:
-            # 获取LangGraph应用
-            from biz.agent.requirement.graph import get_requirement_app
+            from biz.agent.requirement.graph import get_requirement_workflow
 
-            app = await get_requirement_app(checkpointer)
+            app = get_requirement_workflow()
 
             # 配置LangGraph运行时
             config = RunnableConfig(configurable={"thread_id": thread_id})
@@ -271,11 +260,11 @@ class RequirementBIZ:
             )
 
             # 更新状态，提供用户答案后继续执行
-            await app.aupdate_state(config, {"user_answers": user_answers})
+            app.update_state(config, {"user_answers": user_answers})
 
             # 继续执行工作流
             result = None
-            async for event in app.astream(None, config=config):
+            for event in app.stream(None, config=config):
                 if event:
                     result = event
 

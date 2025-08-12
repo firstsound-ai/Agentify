@@ -1,12 +1,10 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from sqlalchemy.orm import Session
 
 from biz.service.requirement import RequirementBIZ
 from common.dto.requirement import RequirementCreate, UserAnswers
 from common.dto.user import UserInfo
 from common.utils.get_user import get_user_info
-from dal.checkpointer import get_checkpointer
 from dal.database import get_db
 from web.vo.result import Result
 
@@ -14,21 +12,20 @@ router = APIRouter(prefix="/api/requirement")
 
 
 @router.post("/create")
-async def create_requirement(
+def create_requirement(
     initial_requirement: RequirementCreate,
     background_tasks: BackgroundTasks,
     user_info: UserInfo = Depends(get_user_info),
     db: Session = Depends(get_db),
-    checkpointer: AsyncPostgresSaver = Depends(get_checkpointer),
 ):
-    thread_id = await RequirementBIZ.create_requirement(
-        db, initial_requirement, user_info, background_tasks, checkpointer
+    thread_id = RequirementBIZ.create_requirement(
+        db, initial_requirement, user_info, background_tasks
     )
     return Result.success(data={"thread_id": thread_id})
 
 
 @router.get("/status/{thread_id}")
-async def get_requirement_status(
+def get_requirement_status(
     thread_id: str,
     user_info: UserInfo = Depends(get_user_info),
     db: Session = Depends(get_db),
@@ -39,16 +36,15 @@ async def get_requirement_status(
 
 
 @router.post("/submit-answers/{thread_id}")
-async def submit_answers(
+def submit_answers(
     thread_id: str,
     user_answers: UserAnswers,
     background_tasks: BackgroundTasks,
     user_info: UserInfo = Depends(get_user_info),
     db: Session = Depends(get_db),
-    checkpointer: AsyncPostgresSaver = Depends(get_checkpointer),
 ):
     """提交问卷答案并继续生成最终文档"""
     result = RequirementBIZ.submit_answers(
-        db, thread_id, user_answers, user_info, background_tasks, checkpointer
+        db, thread_id, user_answers, user_info, background_tasks
     )
     return Result.success(data=result)

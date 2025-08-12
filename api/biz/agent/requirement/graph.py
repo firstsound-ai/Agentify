@@ -11,22 +11,24 @@ from dal.checkpointer import get_checkpointer
 
 workflow = StateGraph(GraphState)
 
-# 添加所有节点
+
 workflow.add_node("draft_generator", generate_draft_node)
 workflow.add_node("question_generator", generate_questions_node)
 workflow.add_node("user_answers_handler", user_answers_node)
 workflow.add_node("document_finalizer", finalize_document_node)
-
-# 设置入口点
 workflow.set_entry_point("draft_generator")
 
-# 添加边：定义工作流程
 workflow.add_edge("draft_generator", "question_generator")
 workflow.add_edge("question_generator", "user_answers_handler")
 workflow.add_edge("user_answers_handler", "document_finalizer")
 workflow.add_edge("document_finalizer", END)
 
+_app = None
 
-def get_workflow_app():
-    checkpointer = get_checkpointer()
-    return workflow.compile(checkpointer=checkpointer)
+
+def get_requirement_workflow():
+    global _app
+    if _app is None:
+        checkpointer = get_checkpointer()
+        _app = workflow.compile(checkpointer=checkpointer)
+    return _app
