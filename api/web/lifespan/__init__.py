@@ -7,9 +7,9 @@ from dal.checkpointer import close_checkpointer, init_checkpointer
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_checkpointer()
+    init_checkpointer()
     yield
-    await close_checkpointer()
+    close_checkpointer()
 
 
 def register_lifespan(app: FastAPI):

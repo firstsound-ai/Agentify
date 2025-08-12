@@ -1,34 +1,34 @@
 from typing import Optional
 
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from psycopg import AsyncConnection
+from langgraph.checkpoint.postgres import PostgresSaver
+from psycopg import Connection
 from psycopg.rows import DictRow
-from psycopg_pool import AsyncConnectionPool
+from psycopg_pool import ConnectionPool
 
 from settings import settings
 
-_checkpointer: Optional[AsyncPostgresSaver] = None
-_pool: Optional[AsyncConnectionPool[AsyncConnection[DictRow]]] = None
+_checkpointer: Optional[PostgresSaver] = None
+_pool: Optional[ConnectionPool[Connection[DictRow]]] = None
 
 
-async def init_checkpointer():
-    """Initializes the connection pool and checkpointer."""
+def init_checkpointer():
     global _pool, _checkpointer
-    _pool = AsyncConnectionPool(
+    _pool = ConnectionPool(
         conninfo=settings.DATABASE_URL,
-        open=False,
+        max_size=20,
+        kwargs={"row_factory": DictRow, "autocommit": True},
+        open=True,
     )
-    await _pool.open()
-    _checkpointer = AsyncPostgresSaver(conn=_pool)
+    _checkpointer = PostgresSaver(conn=_pool)
+    _checkpointer.setup()
 
 
-async def close_checkpointer():
-    """Closes the connection pool."""
+def close_checkpointer():
     if _pool:
-        await _pool.close()
+        _pool.close()
 
 
-async def get_checkpointer() -> AsyncPostgresSaver:
+def get_checkpointer() -> PostgresSaver:
     if _checkpointer is None:
-        raise RuntimeError("Checkpointer has not been initialized.")
+        raise RuntimeError("checkpointer未初始化")
     return _checkpointer
