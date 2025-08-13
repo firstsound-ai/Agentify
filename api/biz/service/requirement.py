@@ -33,26 +33,11 @@ class RequirementBIZ:
                     db, requirement, user_info
                 )
 
-            def start_background_processing():
-                import asyncio
-
-                new_db = next(get_db())
-
-                # 在新事件循环中运行异步任务
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(
-                        RequirementBIZ._process_requirement_task(
-                            thread_id,
-                            requirement.initial_requirement,
-                            new_db,
-                        )
-                    )
-                finally:
-                    loop.close()
-
-            background_tasks.add_task(start_background_processing)
+            background_tasks.add_task(
+                RequirementBIZ._process_requirement_task,
+                thread_id,
+                requirement.initial_requirement,
+            )
 
             return thread_id
         except SQLAlchemyError as e:
@@ -88,7 +73,6 @@ class RequirementBIZ:
                 )
 
             final_document_data = getattr(requirement, "final_document")
-            print(final_document_data)
             if final_document_data:
                 from biz.agent.requirement.state import RequirementDefinition
 
@@ -108,12 +92,11 @@ class RequirementBIZ:
             raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
 
     @staticmethod
-    async def _process_requirement_task(
+    def _process_requirement_task(
         thread_id: str,
         initial_requirement: str,
-        db: Session,
     ):
-        """处理需求的后台任务 - 使用LangGraph invoke执行工作流"""
+        db = next(get_db())
 
         try:
             RequirementDAO.update_requirement_status(
@@ -124,7 +107,6 @@ class RequirementBIZ:
 
             app = get_requirement_workflow()
 
-            # 构建初始状态
             initial_state: GraphState = {
                 "user_request": initial_requirement,
                 "product_draft": None,
@@ -134,14 +116,9 @@ class RequirementBIZ:
                 "error": None,
             }
 
-            # 配置LangGraph运行时
             config = RunnableConfig(configurable={"thread_id": thread_id})
-
-            # 使用LangGraph的invoke方法执行工作流
-            # 这会自动执行到interrupt点（user_answers_node）
             result = app.invoke(initial_state, config=config)
 
-            # 检查执行结果
             if result.get("error"):
                 RequirementDAO.update_requirement_status(
                     db,
@@ -151,7 +128,6 @@ class RequirementBIZ:
                     error_message=result["error"],
                 )
             elif result.get("questionnaire"):
-                # 问卷生成成功，等待用户回答
                 RequirementDAO.update_requirement_status(
                     db,
                     thread_id,
@@ -213,24 +189,11 @@ class RequirementBIZ:
             )
 
             # 启动后台任务继续处理
-            def continue_processing():
-                import asyncio
-
-                new_db = next(get_db())
-
-                # 在新事件循环中运行异步任务
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(
-                        RequirementBIZ._continue_requirement_task(
-                            thread_id, user_answers.answers, new_db
-                        )
-                    )
-                finally:
-                    loop.close()
-
-            background_tasks.add_task(continue_processing)
+            background_tasks.add_task(
+                RequirementBIZ._continue_requirement_task,
+                thread_id,
+                user_answers.answers,
+            )
 
             return {"message": "答案已提交，正在生成最终文档..."}
 
@@ -240,12 +203,14 @@ class RequirementBIZ:
             raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
 
     @staticmethod
-    async def _continue_requirement_task(
+    def _continue_requirement_task(
         thread_id: str,
         user_answers: dict,
-        db: Session,
     ):
         """继续处理需求任务 - 恢复LangGraph执行并提供用户答案"""
+
+        # 获取新的数据库连接
+        db = next(get_db())
 
         try:
             from biz.agent.requirement.graph import get_requirement_workflow
@@ -269,29 +234,9 @@ class RequirementBIZ:
                     result = event
 
             # 处理最终文档
-            final_document_data = None
-            if result and result.get("final_document"):
-                final_document_raw = result["final_document"]
-                if hasattr(final_document_raw, "content"):
-                    # 如果是 AI 消息，解析其内容
-                    try:
-                        content = str(final_document_raw.content).strip()
-                        if content.startswith("```json"):
-                            content = content[7:]
-                        if content.endswith("```"):
-                            content = content[:-3]
-                        final_document_data = json.loads(content.strip())
-                    except json.JSONDecodeError:
-                        # 如果解析失败，直接使用内容
-                        final_document_data = {
-                            "content": str(final_document_raw.content)
-                        }
-                elif hasattr(final_document_raw, "dict"):
-                    final_document_data = final_document_raw.dict()
-                elif isinstance(final_document_raw, dict):
-                    final_document_data = final_document_raw
-                else:
-                    final_document_data = {"content": str(final_document_raw)}
+            final_document_data = RequirementBIZ._parse_final_document(
+                result.get("final_document") if result else None
+            )
 
             if result and result.get("error"):
                 RequirementDAO.update_requirement_status(
@@ -327,3 +272,28 @@ class RequirementBIZ:
             )
         finally:
             db.close()
+
+    @staticmethod
+    def _parse_final_document(final_document_raw):
+        """解析最终文档数据"""
+        if not final_document_raw:
+            return None
+
+        if hasattr(final_document_raw, "content"):
+            # 如果是 AI 消息，解析其内容
+            try:
+                content = str(final_document_raw.content).strip()
+                if content.startswith("```json"):
+                    content = content[7:]
+                if content.endswith("```"):
+                    content = content[:-3]
+                return json.loads(content.strip())
+            except json.JSONDecodeError:
+                # 如果解析失败，直接使用内容
+                return {"content": str(final_document_raw.content)}
+        elif hasattr(final_document_raw, "dict"):
+            return final_document_raw.dict()
+        elif isinstance(final_document_raw, dict):
+            return final_document_raw
+        else:
+            return {"content": str(final_document_raw)}
