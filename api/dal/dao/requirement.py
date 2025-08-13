@@ -100,3 +100,31 @@ class RequirementDAO:
 
             return requirement
         return None
+
+    @staticmethod
+    def get_requirement_fields(db: Session, thread_id: str) -> Optional[Requirement]:
+        return db.query(Requirement).filter(Requirement.id == thread_id).first()
+
+    @staticmethod
+    def update_requirement_fields(
+        db: Session, thread_id: str, **fields
+    ) -> Optional[Requirement]:
+        requirement = db.query(Requirement).filter(Requirement.id == thread_id).first()
+        if not requirement:
+            return None
+
+        allowed_fields = [
+            "requirement_name",
+            "mission_statement",
+            "user_and_scenario",
+            "user_input",
+            "ai_output",
+            "success_criteria",
+            "boundaries_and_limitations",
+        ]
+
+        for field_name in allowed_fields:
+            if field_name in fields and fields[field_name] is not None:
+                setattr(requirement, field_name, fields[field_name])
+
+        return requirement
