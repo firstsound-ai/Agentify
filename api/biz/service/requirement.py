@@ -214,75 +214,38 @@ class RequirementBIZ:
         additional_requirements: Optional[str] = None,
     ):
         """继续处理需求任务 - 恢复LangGraph执行并提供用户答案"""
-
-        # 获取新的数据库连接
         db = next(get_db())
 
         try:
+            from langgraph.types import Command
+
             from biz.agent.requirement.graph import get_requirement_workflow
+            from biz.agent.requirement.state import UserAnswer
 
             app = get_requirement_workflow()
-
-            # 配置LangGraph运行时
             config = RunnableConfig(configurable={"thread_id": thread_id})
 
             RequirementDAO.update_requirement_status(
                 db, thread_id, TaskStatus.PROCESSING, "正在生成最终需求文档..."
             )
 
-            # 更新状态，提供用户答案和额外要求后继续执行
-            # 将 user_answers 转换为 UserAnswer 对象列表
-            from langgraph.types import Command
+            # 准备恢复数据
+            user_answer_objects = [
+                UserAnswer.model_validate(answer)
+                if isinstance(answer, dict)
+                else answer
+                for answer in user_answers
+            ]
 
-            from biz.agent.requirement.state import UserAnswer
-
-            user_answer_objects = []
-            for answer_data in user_answers:
-                if isinstance(answer_data, dict):
-                    user_answer_objects.append(UserAnswer.model_validate(answer_data))
-                else:
-                    user_answer_objects.append(answer_data)
-
-            # 使用 Command 来恢复执行，而不是 update_state
             resume_value = {"user_answers": user_answer_objects}
             if additional_requirements:
                 resume_value["additional_requirements"] = additional_requirements  # type: ignore
 
-            # 恢复执行被中断的工作流
-            result = None
+            # 恢复执行工作流
             result = app.invoke(Command(resume=resume_value), config=config)
 
-            print("---输出---")
-            print(result)
-
-            # 处理最终文档
-            final_document_data = RequirementBIZ._parse_final_document(
-                result.get("final_document") if result else None
-            )
-
-            if result and result.get("error"):
-                RequirementDAO.update_requirement_status(
-                    db,
-                    thread_id,
-                    TaskStatus.FAILED,
-                    "生成最终文档时发生错误",
-                    error_message=result["error"],
-                )
-                db.commit()
-            elif final_document_data:
-                # 解析文档内容并保存到对应字段
-                RequirementBIZ._save_final_document_to_db(
-                    db, thread_id, final_document_data
-                )
-                db.commit()
-            else:
-                RequirementDAO.update_requirement_status(
-                    db,
-                    thread_id,
-                    TaskStatus.FAILED,
-                    "最终文档生成失败",
-                )
-                db.commit()
+            # 处理结果
+            RequirementBIZ._handle_workflow_result(db, thread_id, result)
 
         except Exception as e:
             RequirementDAO.update_requirement_status(
@@ -295,6 +258,27 @@ class RequirementBIZ:
             db.commit()
         finally:
             db.close()
+
+    @staticmethod
+    def _handle_workflow_result(db: Session, thread_id: str, result: dict):
+        """处理工作流执行结果"""
+        if result and result.get("error"):
+            RequirementDAO.update_requirement_status(
+                db,
+                thread_id,
+                TaskStatus.FAILED,
+                "生成最终文档时发生错误",
+                error_message=result["error"],
+            )
+        elif final_document := RequirementBIZ._parse_final_document(
+            result.get("final_document")
+        ):
+            RequirementBIZ._save_final_document_to_db(db, thread_id, final_document)
+        else:
+            RequirementDAO.update_requirement_status(
+                db, thread_id, TaskStatus.FAILED, "最终文档生成失败"
+            )
+        db.commit()
 
     @staticmethod
     def _parse_final_document(final_document_raw):

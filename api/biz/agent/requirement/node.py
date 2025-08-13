@@ -30,94 +30,20 @@ def generate_questions_node(state: GraphState):
 
 
 def finalize_document_node(state: GraphState):
+    """生成最终需求档案"""
     print("--- 节点: 生成最终需求档案 ---")
 
-    # 格式化用户答案为JSON字符串
-    user_answers_data = []
-    user_answers_raw = state.get("user_answers")
-
-    # 调试输出
-    print(f"DEBUG: user_answers 类型: {type(user_answers_raw)}")
-    print(f"DEBUG: user_answers 内容: {user_answers_raw}")
-
-    # 如果 user_answers 是一个字典（从 Command resume 传来），需要解构
-    if isinstance(user_answers_raw, dict) and "user_answers" in user_answers_raw:
-        user_answers = user_answers_raw.get("user_answers")  # type: ignore
-    else:
-        user_answers = user_answers_raw
-
-    if user_answers:
-        from biz.agent.requirement.state import UserAnswer
-
-        # 确保 user_answers 是一个列表
-        if isinstance(user_answers, (list, tuple)):
-            for answer in user_answers:
-                # 处理不同类型的答案数据
-                if isinstance(answer, UserAnswer):
-                    user_answers_data.append(
-                        {
-                            "question_id": answer.question_id,
-                            "selected_option": answer.selected_option,
-                            "custom_input": answer.custom_input,
-                        }
-                    )
-                elif isinstance(answer, dict):
-                    user_answers_data.append(
-                        {
-                            "question_id": answer.get("question_id"),
-                            "selected_option": answer.get("selected_option"),
-                            "custom_input": answer.get("custom_input"),
-                        }
-                    )
-                else:
-                    print(f"警告: 未知的答案类型 {type(answer)}: {answer}")
-                    continue
-        else:
-            print(f"错误: user_answers 不是列表类型: {type(user_answers)}")
-            return {"error": f"user_answers 数据类型错误: {type(user_answers)}"}
-
+    # 处理用户答案数据
+    user_answers_data = _extract_user_answers(state)
     answers_str = json.dumps(user_answers_data, ensure_ascii=False, indent=2)
 
-    # 格式化问卷为JSON字符串
-    questionnaire_str = ""
-    if state["questionnaire"]:
-        questionnaire_data = state["questionnaire"]
-        if hasattr(questionnaire_data, "model_dump"):
-            questionnaire_str = json.dumps(
-                questionnaire_data.model_dump(), ensure_ascii=False, indent=2
-            )
-        else:
-            questionnaire_str = json.dumps(
-                questionnaire_data, ensure_ascii=False, indent=2
-            )
+    # 处理问卷数据
+    questionnaire_str = _extract_questionnaire(state)
 
-    # 获取额外要求
-    additional_requirements_raw = state.get("additional_requirements", "")
+    # 处理额外要求
+    additional_requirements = _extract_additional_requirements(state)
 
-    # 如果 additional_requirements 在 user_answers 字典中，需要解构
-    if (
-        isinstance(user_answers_raw, dict)
-        and "additional_requirements" in user_answers_raw
-    ):
-        additional_requirements = (
-            user_answers_raw.get("additional_requirements", "") or "无额外要求"
-        )  # type: ignore
-    else:
-        additional_requirements = additional_requirements_raw or "无额外要求"
-
-    # 调试输出
-    print(f"DEBUG: additional_requirements 类型: {type(additional_requirements)}")
-    print(f"DEBUG: additional_requirements 内容: {additional_requirements}")
-
-    # 确保 additional_requirements 是字符串类型
-    if not isinstance(additional_requirements, str):
-        print(
-            f"警告: additional_requirements 不是字符串类型: {type(additional_requirements)}"
-        )
-        additional_requirements = (
-            str(additional_requirements) if additional_requirements else "无额外要求"
-        )
-
+    # 调用AI生成最终文档
     response = finalizer_chain.invoke(
         {
             "product_draft": state["product_draft"],
@@ -126,29 +52,89 @@ def finalize_document_node(state: GraphState):
             "additional_requirements": additional_requirements,
         }
     )
+
     print("生成的最终文档:", response.content)
     return {"final_document": response}
 
 
-def user_answers_node(state: GraphState):
-    """
-    用户回答处理节点
+def _extract_user_answers(state: GraphState) -> list:
+    """提取并格式化用户答案"""
+    from biz.agent.requirement.state import UserAnswer
 
-    这个节点会中断执行，等待用户提供问卷答案。
-    当用户提交答案后，LangGraph会恢复执行并继续到下一个节点。
-    """
+    user_answers_raw = state.get("user_answers")
+    if not user_answers_raw:
+        return []
+
+    # 解构从Command传来的数据
+    if isinstance(user_answers_raw, dict) and "user_answers" in user_answers_raw:
+        user_answers = user_answers_raw.get("user_answers")  # type: ignore
+    else:
+        user_answers = user_answers_raw
+
+    if not isinstance(user_answers, (list, tuple)):
+        return []
+
+    result = []
+    for answer in user_answers:
+        if isinstance(answer, UserAnswer):
+            result.append(
+                {
+                    "question_id": answer.question_id,
+                    "selected_option": answer.selected_option,
+                    "custom_input": answer.custom_input,
+                }
+            )
+        elif isinstance(answer, dict):
+            result.append(
+                {
+                    "question_id": answer.get("question_id"),
+                    "selected_option": answer.get("selected_option"),
+                    "custom_input": answer.get("custom_input"),
+                }
+            )
+
+    return result
+
+
+def _extract_questionnaire(state: GraphState) -> str:
+    """提取并格式化问卷数据"""
+    questionnaire_data = state.get("questionnaire")
+    if not questionnaire_data:
+        return ""
+
+    if hasattr(questionnaire_data, "model_dump"):
+        return json.dumps(questionnaire_data.model_dump(), ensure_ascii=False, indent=2)
+    else:
+        return json.dumps(questionnaire_data, ensure_ascii=False, indent=2)
+
+
+def _extract_additional_requirements(state: GraphState) -> str:
+    """提取额外要求"""
+    user_answers_raw = state.get("user_answers")
+
+    # 从Command传来的数据中提取
+    if (
+        isinstance(user_answers_raw, dict)
+        and "additional_requirements" in user_answers_raw
+    ):
+        return str(user_answers_raw.get("additional_requirements") or "无额外要求")
+
+    # 从state中直接提取
+    return str(state.get("additional_requirements") or "无额外要求")
+
+
+def user_answers_node(state: GraphState):
+    """用户回答处理节点"""
     print("--- 节点: 等待用户回答 ---")
 
-    # 检查是否已经有用户答案（通过 Command 恢复执行时）
+    # 检查是否已经有用户答案（通过Command恢复执行时）
     if state.get("user_answers") is not None:
-        print("用户回答已提供:", state["user_answers"])
         return {
             "user_answers": state["user_answers"],
             "additional_requirements": state.get("additional_requirements"),
         }
 
     # 中断执行，等待用户输入
-    # interrupt会暂停图的执行，直到外部系统提供答案
     user_answers = interrupt(
         value={
             "message": "等待用户回答问卷",
@@ -157,9 +143,6 @@ def user_answers_node(state: GraphState):
         }
     )
 
-    if user_answers:
-        print("用户回答:", user_answers)
-        return {"user_answers": user_answers}
-
-    # 如果没有答案，返回错误状态
-    return {"error": "未收到用户答案"}
+    return (
+        {"user_answers": user_answers} if user_answers else {"error": "未收到用户答案"}
+    )
