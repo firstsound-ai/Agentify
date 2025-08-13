@@ -2,7 +2,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from biz.service.requirement import RequirementBIZ
-from common.dto.requirement import RequirementCreate, UserAnswers
+from common.dto.requirement import RequirementCreate, RequirementFields, UserAnswers
 from common.dto.user import UserInfo
 from common.utils.get_user import get_user_info
 from dal.database import get_db
@@ -42,8 +42,30 @@ def submit_answers(
     user_info: UserInfo = Depends(get_user_info),
     db: Session = Depends(get_db),
 ):
-    """提交问卷答案并继续生成最终文档"""
     result = RequirementBIZ.submit_answers(
         db, thread_id, user_answers, user_info, background_tasks
     )
     return Result.success(data=result)
+
+
+@router.get("/fields/{thread_id}")
+def get_requirement_fields(
+    thread_id: str,
+    user_info: UserInfo = Depends(get_user_info),
+    db: Session = Depends(get_db),
+):
+    result = RequirementBIZ.get_requirement_fields(db, thread_id, user_info)
+    return Result.success(data=result.model_dump())
+
+
+@router.post("/fields/{thread_id}")
+def update_requirement_fields(
+    thread_id: str,
+    fields_update: RequirementFields,
+    user_info: UserInfo = Depends(get_user_info),
+    db: Session = Depends(get_db),
+):
+    result = RequirementBIZ.update_requirement_fields(
+        db, thread_id, fields_update, user_info
+    )
+    return Result.success(data=result.model_dump())

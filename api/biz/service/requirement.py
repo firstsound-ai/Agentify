@@ -10,6 +10,7 @@ from biz.agent.requirement.graph import get_requirement_workflow
 from biz.agent.requirement.state import GraphState, Questionnaire, RequirementDefinition
 from common.dto.requirement import (
     RequirementCreate,
+    RequirementFields,
     RequirementTaskResponse,
     UserAnswers,
 )
@@ -344,3 +345,66 @@ class RequirementBIZ:
                 "最终需求文档已生成完成（部分字段解析失败）",
                 final_document=final_document_data,
             )
+
+    @staticmethod
+    def _validate_requirement_access(requirement, user_info: UserInfo):
+        """验证需求访问权限和状态的通用方法"""
+        if not requirement:
+            raise GeneralException(ErrorCode.NOT_FOUND, detail="需求不存在")
+
+        if getattr(requirement, "user_id") != user_info.id:
+            raise GeneralException(ErrorCode.FORBIDDEN, detail="无权限访问此需求")
+
+        if getattr(requirement, "status") != TaskStatus.COMPLETED.value:
+            raise GeneralException(
+                ErrorCode.BAD_REQUEST, detail="只有已完成的需求才能编辑"
+            )
+
+    @staticmethod
+    def _requirement_to_fields(requirement) -> RequirementFields:
+        """将数据库对象转换为字段模型"""
+        return RequirementFields.model_validate(requirement)
+
+    @staticmethod
+    def get_requirement_fields(db: Session, thread_id: str, user_info: UserInfo):
+        """获取需求的可编辑字段"""
+        try:
+            requirement = RequirementDAO.get_requirement_fields(db, thread_id)
+            RequirementBIZ._validate_requirement_access(requirement, user_info)
+            return RequirementBIZ._requirement_to_fields(requirement)
+        except GeneralException:
+            raise
+        except SQLAlchemyError as e:
+            raise GeneralException(ErrorCode.DATABASE_ERROR, detail=str(e))
+        except Exception as e:
+            raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
+
+    @staticmethod
+    def update_requirement_fields(
+        db: Session,
+        thread_id: str,
+        fields_update: RequirementFields,
+        user_info: UserInfo,
+    ):
+        """更新需求的可编辑字段"""
+        try:
+            with db.begin():
+                # 先获取并验证权限
+                requirement = RequirementDAO.get_requirement_fields(db, thread_id)
+                RequirementBIZ._validate_requirement_access(requirement, user_info)
+
+                # 执行更新
+                updated_requirement = RequirementDAO.update_requirement_fields(
+                    db, thread_id, **fields_update.model_dump(exclude_none=True)
+                )
+
+                if not updated_requirement:
+                    raise GeneralException(ErrorCode.DATABASE_ERROR, detail="更新失败")
+
+                return RequirementBIZ._requirement_to_fields(updated_requirement)
+        except GeneralException:
+            raise
+        except SQLAlchemyError as e:
+            raise GeneralException(ErrorCode.DATABASE_ERROR, detail=str(e))
+        except Exception as e:
+            raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))

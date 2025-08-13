@@ -22,3 +22,18 @@ class RequirementTaskResponse(BaseModel):
     final_document: Optional[RequirementDefinition] = None
     error: Optional[str] = None
     progress: str
+
+
+class RequirementFields(BaseModel):
+    """需求可编辑字段模型 - 可用于请求和响应"""
+
+    requirement_name: Optional[str] = None
+    mission_statement: Optional[str] = None
+    user_and_scenario: Optional[str] = None
+    user_input: Optional[str] = None
+    ai_output: Optional[str] = None
+    success_criteria: Optional[str] = None
+    boundaries_and_limitations: Optional[str] = None
+
+    class Config:
+        from_attributes = True  # Pydantic v2 的配置，支持从 ORM 对象创建
