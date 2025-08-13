@@ -9,9 +9,9 @@ from biz.agent.requirement.state import GraphState
 from common.dto.requirement import (
     RequirementCreate,
     RequirementTaskResponse,
-    TaskStatus,
     UserAnswers,
 )
+from common.enums.task import TaskStatus
 from common.dto.user import UserInfo
 from common.enums.error_code import ErrorCode
 from common.exceptions.general_exception import GeneralException

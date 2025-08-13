@@ -30,9 +30,8 @@ def get_requirement_status(
     user_info: UserInfo = Depends(get_user_info),
     db: Session = Depends(get_db),
 ):
-    """轮询接口 - 获取需求处理状态"""
     result = RequirementBIZ.get_requirement_status(db, thread_id, user_info)
-    return Result.success(data=result.dict())
+    return Result.success(data=result.model_dump())
 
 
 @router.post("/submit-answers/{thread_id}")
