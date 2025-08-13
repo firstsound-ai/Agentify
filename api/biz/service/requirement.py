@@ -5,15 +5,16 @@ from langchain_core.runnables.config import RunnableConfig
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from biz.agent.requirement.state import GraphState
+from biz.agent.requirement.graph import get_requirement_workflow
+from biz.agent.requirement.state import GraphState, Questionnaire, RequirementDefinition
 from common.dto.requirement import (
     RequirementCreate,
     RequirementTaskResponse,
     UserAnswers,
 )
-from common.enums.task import TaskStatus
 from common.dto.user import UserInfo
 from common.enums.error_code import ErrorCode
+from common.enums.task import TaskStatus
 from common.exceptions.general_exception import GeneralException
 from dal.dao.requirement import RequirementDAO
 from dal.database import get_db
@@ -66,16 +67,12 @@ class RequirementBIZ:
 
             questionnaire_data = getattr(requirement, "questionnaire")
             if questionnaire_data:
-                from biz.agent.requirement.state import Questionnaire
-
                 response.questionnaire = Questionnaire.model_validate(
                     questionnaire_data
                 )
 
             final_document_data = getattr(requirement, "final_document")
             if final_document_data:
-                from biz.agent.requirement.state import RequirementDefinition
-
                 response.final_document = RequirementDefinition.model_validate(
                     final_document_data
                 )
@@ -102,8 +99,6 @@ class RequirementBIZ:
             RequirementDAO.update_requirement_status(
                 db, thread_id, TaskStatus.PROCESSING, "开始处理需求..."
             )
-
-            from biz.agent.requirement.graph import get_requirement_workflow
 
             app = get_requirement_workflow()
 
