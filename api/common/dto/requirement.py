@@ -1,8 +1,8 @@
-from typing import Dict, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
-from biz.agent.requirement.state import Questionnaire, RequirementDefinition
+from biz.agent.requirement.state import Questionnaire, RequirementDefinition, UserAnswer
 from common.enums.task import TaskStatus
 
 
@@ -11,7 +11,8 @@ class RequirementCreate(BaseModel):
 
 
 class UserAnswers(BaseModel):
-    answers: Dict[str, str]  # 格式: {"q1": "PYTHON_DS", "q2": "ALL_LEVELS", ...}
+    answers: List[UserAnswer]  # 改为新的用户答案结构
+    additional_requirements: Optional[str] = None  # 用户额外补充的要求
 
 
 class RequirementTaskResponse(BaseModel):

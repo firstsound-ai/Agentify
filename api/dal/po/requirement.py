@@ -23,6 +23,7 @@ class Requirement(Base):
     progress = Column(String(255), nullable=True, default="初始化中...")
     questionnaire = Column(JSON, nullable=True)
     user_answers = Column(JSON, nullable=True)
+    additional_requirements = Column(Text, nullable=True)  # 新增字段
     final_document = Column(JSON, nullable=True)
     error_message = Column(Text, nullable=True)
 

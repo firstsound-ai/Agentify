@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from fastapi import BackgroundTasks
 from langchain_core.runnables.config import RunnableConfig
@@ -107,6 +108,7 @@ class RequirementBIZ:
                 "product_draft": None,
                 "questionnaire": None,
                 "user_answers": None,
+                "additional_requirements": None,  # 添加新字段
                 "final_document": None,
                 "error": None,
             }
@@ -122,6 +124,7 @@ class RequirementBIZ:
                     "处理过程中发生错误",
                     error_message=result["error"],
                 )
+                db.commit()
             elif result.get("questionnaire"):
                 RequirementDAO.update_requirement_status(
                     db,
@@ -130,6 +133,7 @@ class RequirementBIZ:
                     "问卷已生成，等待用户回答",
                     questionnaire=result["questionnaire"],
                 )
+                db.commit()
             else:
                 RequirementDAO.update_requirement_status(
                     db,
@@ -137,6 +141,7 @@ class RequirementBIZ:
                     TaskStatus.FAILED,
                     "问卷生成失败",
                 )
+                db.commit()
 
         except Exception as e:
             RequirementDAO.update_requirement_status(
@@ -146,6 +151,7 @@ class RequirementBIZ:
                 "处理过程中发生错误",
                 error_message=str(e),
             )
+            db.commit()
         finally:
             db.close()
 
@@ -174,20 +180,24 @@ class RequirementBIZ:
                     detail=f"当前状态不允许提交答案，当前状态: {current_status}",
                 )
 
-            # 保存用户答案
+            # 保存用户答案和额外要求
+            user_answers_data = [answer.model_dump() for answer in user_answers.answers]
             RequirementDAO.update_requirement_status(
                 db,
                 thread_id,
                 TaskStatus.PROCESSING,
                 "已收到用户答案，正在生成最终文档...",
-                user_answers=user_answers.answers,
+                user_answers=user_answers_data,
+                additional_requirements=user_answers.additional_requirements,
             )
+            db.commit()
 
             # 启动后台任务继续处理
             background_tasks.add_task(
                 RequirementBIZ._continue_requirement_task,
                 thread_id,
                 user_answers.answers,
+                user_answers.additional_requirements,
             )
 
             return {"message": "答案已提交，正在生成最终文档..."}
@@ -200,7 +210,8 @@ class RequirementBIZ:
     @staticmethod
     def _continue_requirement_task(
         thread_id: str,
-        user_answers: dict,
+        user_answers: list,
+        additional_requirements: Optional[str] = None,
     ):
         """继续处理需求任务 - 恢复LangGraph执行并提供用户答案"""
 
@@ -219,14 +230,30 @@ class RequirementBIZ:
                 db, thread_id, TaskStatus.PROCESSING, "正在生成最终需求文档..."
             )
 
-            # 更新状态，提供用户答案后继续执行
-            app.update_state(config, {"user_answers": user_answers})
+            # 更新状态，提供用户答案和额外要求后继续执行
+            # 将 user_answers 转换为 UserAnswer 对象列表
+            from langgraph.types import Command
 
-            # 继续执行工作流
+            from biz.agent.requirement.state import UserAnswer
+
+            user_answer_objects = []
+            for answer_data in user_answers:
+                if isinstance(answer_data, dict):
+                    user_answer_objects.append(UserAnswer.model_validate(answer_data))
+                else:
+                    user_answer_objects.append(answer_data)
+
+            # 使用 Command 来恢复执行，而不是 update_state
+            resume_value = {"user_answers": user_answer_objects}
+            if additional_requirements:
+                resume_value["additional_requirements"] = additional_requirements  # type: ignore
+
+            # 恢复执行被中断的工作流
             result = None
-            for event in app.stream(None, config=config):
-                if event:
-                    result = event
+            result = app.invoke(Command(resume=resume_value), config=config)
+
+            print("---输出---")
+            print(result)
 
             # 处理最终文档
             final_document_data = RequirementBIZ._parse_final_document(
@@ -241,14 +268,13 @@ class RequirementBIZ:
                     "生成最终文档时发生错误",
                     error_message=result["error"],
                 )
+                db.commit()
             elif final_document_data:
-                RequirementDAO.update_requirement_status(
-                    db,
-                    thread_id,
-                    TaskStatus.COMPLETED,
-                    "最终需求文档已生成完成",
-                    final_document=final_document_data,
+                # 解析文档内容并保存到对应字段
+                RequirementBIZ._save_final_document_to_db(
+                    db, thread_id, final_document_data
                 )
+                db.commit()
             else:
                 RequirementDAO.update_requirement_status(
                     db,
@@ -256,6 +282,7 @@ class RequirementBIZ:
                     TaskStatus.FAILED,
                     "最终文档生成失败",
                 )
+                db.commit()
 
         except Exception as e:
             RequirementDAO.update_requirement_status(
@@ -265,6 +292,7 @@ class RequirementBIZ:
                 "生成最终文档时发生错误",
                 error_message=str(e),
             )
+            db.commit()
         finally:
             db.close()
 
@@ -292,3 +320,43 @@ class RequirementBIZ:
             return final_document_raw
         else:
             return {"content": str(final_document_raw)}
+
+    @staticmethod
+    def _save_final_document_to_db(
+        db: Session, thread_id: str, final_document_data: dict
+    ):
+        """将最终文档内容解析并保存到数据库对应字段"""
+        try:
+            # 提取文档字段
+            requirement_name = final_document_data.get("requirement_name")
+            mission_statement = final_document_data.get("mission_statement")
+            user_and_scenario = final_document_data.get("user_and_scenario")
+            user_input = final_document_data.get("user_input")
+            ai_output = final_document_data.get("ai_output")
+            success_criteria = final_document_data.get("success_criteria")
+            boundaries_and_limitations = final_document_data.get(
+                "boundaries_and_limitations"
+            )
+
+            # 保存到数据库
+            RequirementDAO.update_requirement_with_final_document(
+                db=db,
+                thread_id=thread_id,
+                final_document=final_document_data,
+                requirement_name=requirement_name,
+                mission_statement=mission_statement,
+                user_and_scenario=user_and_scenario,
+                user_input=user_input,
+                ai_output=ai_output,
+                success_criteria=success_criteria,
+                boundaries_and_limitations=boundaries_and_limitations,
+            )
+        except Exception:
+            # 如果解析失败，至少保存原始文档
+            RequirementDAO.update_requirement_status(
+                db,
+                thread_id,
+                TaskStatus.COMPLETED,
+                "最终需求文档已生成完成（部分字段解析失败）",
+                final_document=final_document_data,
+            )

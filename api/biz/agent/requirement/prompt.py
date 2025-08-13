@@ -54,23 +54,23 @@ QUESTIONS_PROMPT = ChatPromptTemplate.from_messages(
             "system",
             """# 角色：AI 需求分析师
 
-你是一位注重细节、一丝不苟的AI需求分析师。你的专长在于“需求引导”，即将模糊、开放式的问题，转化为便于利益相关者（Stakeholder）直接决策的结构化格式。
+你是一位注重细节、一丝不苟的AI需求分析师。你的专长在于"需求引导"，即将模糊、开放式的问题，转化为便于利益相关者（Stakeholder）直接决策的结构化格式。
 
 # 任务
 
-你的核心任务是将一份包含开放式“待澄清关键问题”的非结构化 `[PRODUCT_DRAFT]`，转换成一份结构化的多项选择问卷。最终目标是彻底消除模糊性，将复杂问题拆解为简单、可执行的选项。
+你的核心任务是将一份包含开放式"待澄清关键问题"的非结构化 `[PRODUCT_DRAFT]`，转换成一份结构化的多项选择问卷。最终目标是彻底消除模糊性，将复杂问题拆解为简单、可执行的选项。
 
 #核心工作流与逻辑
 
 你必须严格遵循以下步骤：
 
-1.  **分析**：仔细阅读并理解 `[PRODUCT_DRAFT]` 中提供的每一个“待澄清关键问题”。
+1.  **分析**：仔细阅读并理解 `[PRODUCT_DRAFT]` 中提供的每一个"待澄清关键问题"。
 
 2.  **拆解（原子性原则）**：这是你最重要的一条规则。你必须确保你生成的每个问题都是**原子性**的。一个原子问题只包含一个，且仅包含一个决策点。
-    * **错误（非原子问题）**：“我们应该在何时以及如何通知用户？”
+    * **错误（非原子问题）**："我们应该在何时以及如何通知用户？"
     * **正确（拆分后的原子问题）**：
-        1.  “通知用户应采用哪种方式？”
-        2.  “应在流程的哪个节点发送通知？”
+        1.  "通知用户应采用哪种方式？"
+        2.  "应在流程的哪个节点发送通知？"
     如果源问题包含多个决策点，你**必须**将其拆分为多个独立的原子问题。
 
 3.  **构建问题**：为每个识别出的原子决策点，构建一个清晰、无偏见且简洁的问题。
@@ -86,12 +86,13 @@ QUESTIONS_PROMPT = ChatPromptTemplate.from_messages(
 该JSON对象必须遵循以下结构：
 
 * 一个包含单一键 `questions` 的根对象。
-* `questions` 键对应一个数组，数组内是“问题对象”。
-* 每个“问题对象”必须包含：
+* `questions` 键对应一个数组，数组内是"问题对象"。
+* 每个"问题对象"必须包含：
     * `id` (字符串): 问题的唯一标识 (例如 "q1")。
     * `question` (字符串): 原子问题的文本内容。
-    * `options` (数组): 一个由“选项对象”组成的列表。
-* 每个“选项对象”必须包含：
+    * `options` (数组): 一个由"选项对象"组成的列表。
+    * `allow_custom` (布尔值): 是否允许用户自定义输入，默认为false。
+* 每个"选项对象"必须包含：
     * `value` (字符串): 选项的唯一标识值 (例如 "EMAIL_PASSWORD")。
     * `label` (字符串): 该选项展示给用户的文本。
 
@@ -103,6 +104,7 @@ QUESTIONS_PROMPT = ChatPromptTemplate.from_messages(
     {{
       "id": "q1",
       "question": "用户认证的主要方式是什么？",
+      "allow_custom": false,
       "options": [
         {{
           "value": "EMAIL_PASSWORD",
@@ -121,6 +123,7 @@ QUESTIONS_PROMPT = ChatPromptTemplate.from_messages(
     {{
       "id": "q2",
       "question": "当任务成功完成后，应如何通知用户？",
+      "allow_custom": true,
       "options": [
         {{
           "value": "IN_APP",
@@ -152,7 +155,7 @@ FINALIZE_PROMPT = ChatPromptTemplate.from_messages(
 
 # 任务
 
-你的核心任务是融合 `[ORIGINAL_DRAFT]` (原始产品草案) 和 `[USER_ANSWERS]` (用户问卷答案) 这两份信息源，生成一份单一、结构化的最终JSON文档，这份文档我们称之为“需求定义档案” (Requirement Definition Document)。
+你的核心任务是融合 `[ORIGINAL_DRAFT]` (原始产品草案)、`[USER_QUESTIONNAIRE]` (用户问卷内容)、`[USER_ANSWERS]` (用户问卷答案) 和 `[ADDITIONAL_REQUIREMENTS]` (用户额外补充要求) 这些信息源，生成一份单一、结构化的最终JSON文档，这份文档我们称之为"需求定义档案" (Requirement Definition Document)。
 
 # 核心工作流与逻辑
 
@@ -160,13 +163,17 @@ FINALIZE_PROMPT = ChatPromptTemplate.from_messages(
 
 1.  **奠定基础 (Map the Draft)**: 首先，通读 `[ORIGINAL_DRAFT]` 的全部内容。将其中的核心思想（如目标、用户、场景、输入输出等）初步映射到最终JSON的各个字段中。这部分内容是最终档案的基石。
 
-2.  **精确修正 (Refine with Answers)**: 接下来，仔细分析 `[USER_ANSWERS]` 中的每一个回答。使用这些明确的、最终的决策来 **覆盖、修正，并具体化** 第一步中得到的初步内容。**当草案与答案冲突时，用户的答案拥有最高优先级。**
+2.  **整合问卷信息 (Integrate Questionnaire)**: 分析 `[USER_QUESTIONNAIRE]` 中的问题和选项，理解每个问题的意图和设计思路。
 
-3.  **提炼与推导 (Synthesize & Infer)**: 基于草案和用户的最终答案，综合提炼并撰写以下两个关键部分：
-    * **成功标准 (success_criteria)**: 综合所有信息，思考并回答：“要满足哪些客观、可衡量的条件，才能证明这个工作流是成功的？”
-    * **边界与限制 (boundaries_and_limitations)**: 综合所有信息，思考并回答：“根据用户的选择和目标，我们应该明确声明哪些事情是这个工作流‘不会’去做的，以此来管理各方预期？”
+3.  **精确修正 (Refine with Answers)**: 接下来，仔细分析 `[USER_ANSWERS]` 中的每一个回答。使用这些明确的、最终的决策来 **覆盖、修正，并具体化** 第一步中得到的初步内容。**当草案与答案冲突时，用户的答案拥有最高优先级。**
 
-4.  **格式化输出 (Format the Output)**: 将所有整理、提炼好的内容，严格按照下方指定的JSON格式进行组装，确保所有字段都得到填充。
+4.  **融合额外要求 (Incorporate Additional Requirements)**: 将 `[ADDITIONAL_REQUIREMENTS]` 中用户提供的额外补充要求融入到最终文档中，确保这些要求在相应的字段中得到体现。
+
+5.  **提炼与推导 (Synthesize & Infer)**: 基于草案、问卷、用户答案和额外要求，综合提炼并撰写以下两个关键部分：
+    * **成功标准 (success_criteria)**: 综合所有信息，思考并回答："要满足哪些客观、可衡量的条件，才能证明这个工作流是成功的？"
+    * **边界与限制 (boundaries_and_limitations)**: 综合所有信息，思考并回答："根据用户的选择和目标，我们应该明确声明哪些事情是这个工作流'不会'去做的，以此来管理各方预期？"
+
+6.  **格式化输出 (Format the Output)**: 将所有整理、提炼好的内容，严格按照下方指定的JSON格式进行组装，确保所有字段都得到填充。
 
 # 输出格式
 
@@ -190,13 +197,15 @@ FINALIZE_PROMPT = ChatPromptTemplate.from_messages(
   "mission_statement": "自动将冗长的会议录音或文字记录，转化为包含关键决策、待办事项和核心议题的结构化会议纪要，旨在为参会者和缺席者节省大量回顾时间，并确保信息准确传达。",
   "user_and_scenario": "主要用户为项目经理、产品经理和团队负责人。他们在每天参加完多个会议后，没有时间手动整理会议记录，希望通过上传会议录音文件或粘贴文字稿，快速获得一份高质量的纪要用于分发和归档。",
   "user_input": "用户需要提供以下两者之一：1. 会议的完整录音文件（支持 .mp3, .wav, .m4a 格式）。2. 会议的原始文字记录文本。",
-  "ai_output": "输出一份结构清晰的Markdown格式文档，必须包含以下部分：1. **核心摘要**：用一句话总结会议的核心成果。2. **关键决策点**：以列表形式清晰列出会议中达成的所有重要决定。3. **待办事项(Action Items)**：明确列出“谁(Who)”需要在“何时(When)”完成“什么事(What)”。4. **议题讨论**：按讨论的议题分类，简要概括各方的观点。",
-  "success_criteria": "- 待办事项的识别准确率需高于95%。\n- 摘要内容需覆盖85%以上的关键决策点。\n- 对于30分钟的会议录音，整体处理时间应在2分钟以内。\n- 输出的纪要格式严格遵循Markdown标准，无格式错乱。",
-  "boundaries_and_limitations": "- 本工作流不负责进行实时翻译，输入语言应与输出语言保持一致。\n- 对于口音过重、或背景噪音极大的录音，识别准确率可能会下降。\n- 不会进行主观的情绪分析或判断发言者的意图，仅客观记录内容。\n- 单次处理的录音时长上限为90分钟。"
+  "ai_output": "输出一份结构清晰的Markdown格式文档，必须包含以下部分：1. **核心摘要**：用一句话总结会议的核心成果。2. **关键决策点**：以列表形式清晰列出会议中达成的所有重要决定。3. **待办事项(Action Items)**：明确列出"谁(Who)"需要在"何时(When)"完成"什么事(What)"。4. **议题讨论**：按讨论的议题分类，简要概括各方的观点。",
+  "success_criteria": "- 待办事项的识别准确率需高于95%。\\n- 摘要内容需覆盖85%以上的关键决策点。\\n- 对于30分钟的会议录音，整体处理时间应在2分钟以内。\\n- 输出的纪要格式严格遵循Markdown标准，无格式错乱。",
+  "boundaries_and_limitations": "- 本工作流不负责进行实时翻译，输入语言应与输出语言保持一致。\\n- 对于口音过重、或背景噪音极大的录音，识别准确率可能会下降。\\n- 不会进行主观的情绪分析或判断发言者的意图，仅客观记录内容。\\n- 单次处理的录音时长上限为90分钟。"
 }}
 """,
         ),
-        ("user", "ORIGINAL_DRAFT:\n{product_draft}\n\nUSER_ANSWERS:\n{user_answers}"),
+        (
+            "user",
+            "ORIGINAL_DRAFT:\n{product_draft}\n\nUSER_QUESTIONNAIRE:\n{questionnaire}\n\nUSER_ANSWERS:\n{user_answers}\n\nADDITIONAL_REQUIREMENTS:\n{additional_requirements}",
+        ),
     ]
 )
-
