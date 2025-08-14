@@ -17,6 +17,7 @@ class ErrorCode(Enum):
     # === Core Generic Errors (1xxxxx) ===
     # 1400xxx - Request Errors
     VALIDATION_ERROR = (1400001, "Request data validation failed")
+    BAD_REQUEST = (1400002, "Bad request")
 
     # 1401xxx - Authentication Errors
     UNAUTHORIZED = (1401001, "Authentication failed")

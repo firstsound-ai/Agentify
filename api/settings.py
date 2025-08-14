@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     DIFY_EMAIL: str = ""
     DIFY_PASSWORD: str = ""
 
+    DEFAULT_MODEL: str = ""
+    OPENAI_API_BASE: str = ""
+    OPENAI_API_KEY: str = ""
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
