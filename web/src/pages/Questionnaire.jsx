@@ -22,6 +22,7 @@ function Questionnaire() {
   const [isShowingAdditionalRequirements, setIsShowingAdditionalRequirements] = useState(false);
   const [additionalRequirements, setAdditionalRequirements] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingText, setLoadingText] = useState('正在生成应用...');
 
   if (!questionnaire || !questionnaire.questions) {
     return (
@@ -84,9 +85,50 @@ function Questionnaire() {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // 显示额外需求输入界面
       setIsShowingAdditionalRequirements(true);
     }
+  };
+
+  // 轮询获取需求字段
+  const pollRequirementFields = async () => {
+    const maxAttempts = 30;
+    const interval = 3000;
+    let attempts = 0;
+
+    const poll = async () => {
+      attempts++;
+      setLoadingText(`正在生成需求表单... (${attempts}/${maxAttempts})`);
+      
+      try {
+        const result = await request.get(`/api/requirement/fields/${threadId}`);
+        console.log('轮询字段结果:', result);
+
+        // 200状态码且data不为null，表示成功
+        if (result.code === 0 && result.data !== null) {
+          navigate('/requirement-form', { 
+            state: { 
+              userInput: userInput,
+              threadId: threadId,
+              requirementData: result.data
+            } 
+          });
+          return;
+        }
+      } catch (error) {
+        // 400状态码或其他错误都当作"还未准备好"处理
+        console.log('数据还未准备好，继续轮询...', error.status || error.message);
+      }
+
+      // 继续轮询或超时处理
+      if (attempts < maxAttempts) {
+        setTimeout(poll, interval);
+      } else {
+        setIsComplete(false);
+        setIsSubmitting(false);
+      }
+    };
+
+    poll();
   };
 
   const submitAnswers = async () => {
@@ -98,13 +140,11 @@ function Questionnaire() {
       questions.forEach(question => {
         const answer = answers[question.id];
         if (answer === 'CUSTOM' && customAnswers[question.id]) {
-          // 自定义答案
           answersArray.push({
             question_id: question.id,
             custom_input: customAnswers[question.id].trim()
           });
         } else if (answer) {
-          // 选项答案
           answersArray.push({
             question_id: question.id,
             selected_option: answer
@@ -123,25 +163,15 @@ function Questionnaire() {
       const result = await request.post(`/api/requirement/submit-answers/${threadId}`, submissionData);
       
       if (result.code === 0) {
-        // Toast.success('答案提交成功！');
         setIsComplete(true);
         
-        // 3秒后跳转到生成页面
-        setTimeout(() => {
-          navigate('/generate', { 
-            state: { 
-              userInput,
-              threadId,
-              answers: submissionData
-            } 
-          });
-        }, 3000);
+        // 开始轮询需求字段
+        await pollRequirementFields();
       } else {
         throw new Error(result.message || '提交失败');
       }
     } catch (error) {
       console.error('提交答案失败:', error);
-      Toast.error('提交失败，请重试');
       setIsSubmitting(false);
     }
   };
@@ -178,7 +208,7 @@ function Questionnaire() {
                 <Spin size="large" />
               </div>
               <Title heading={2} style={{ textAlign: 'center', margin: '24px 0', color: '#1a202c' }}>
-                正在生成应用...
+                {loadingText}
               </Title>
               <Text style={{ textAlign: 'center', fontSize: '16px', color: '#666' }}>
                 我们正在根据您的需求和答案创建定制化的应用方案，请稍候片刻
@@ -373,7 +403,6 @@ function Questionnaire() {
                   </div>
                 ))}
                 
-                {/* 如果允许自定义，添加自定义选项 */}
                 {question.allow_custom && (
                   <div className="option-item custom-option">
                     <Radio value="CUSTOM">

@@ -1,0 +1,271 @@
+.requirement-form-content {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 12px 10px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.requirement-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 头部区域 */
+.requirement-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.header-button {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 12px !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(10px) !important;
+  transition: all 0.3s ease !important;
+  flex-shrink: 0;
+}
+
+.header-button:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: #cbd5e0 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.header-info {
+  flex: 1;
+  text-align: center;
+}
+
+.header-actions {
+  flex-shrink: 0;
+}
+
+/* 主卡片 */
+.requirement-form-card {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  padding: 30px !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* 表单内容 */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+}
+
+.form-field:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.field-label {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.field-content {
+  margin-top: 16px;
+}
+
+.field-display {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-height: 60px;
+  transition: all 0.2s ease;
+}
+
+.field-display:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e0;
+}
+
+/* 修复需求名称输入框样式 */
+.requirement-name-input {
+  width: 100% !important;
+  border-radius: 12px !important;
+  border: 1px solid #d1d5db !important;
+  transition: all 0.2s ease !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #374151 !important;
+}
+
+.requirement-name-input:focus,
+.requirement-name-input:focus-within {
+  border-color: #374151 !important;
+  box-shadow: 0 0 0 3px rgba(55, 65, 81, 0.1) !important;
+}
+
+.requirement-name-input .semi-input {
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.requirement-name-input .semi-input:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 文本域样式 */
+.requirement-textarea {
+  width: 100% !important;
+  border-radius: 12px !important;
+  border: 1px solid #d1d5db !important;
+  transition: all 0.2s ease !important;
+}
+
+.requirement-textarea:focus-within {
+  border-color: #374151 !important;
+  box-shadow: 0 0 0 3px rgba(55, 65, 81, 0.1) !important;
+}
+
+.requirement-textarea .semi-input {
+  border: none !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #374151 !important;
+  padding: 12px 16px !important;
+}
+
+.requirement-textarea .semi-input:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.requirement-textarea .semi-input::placeholder,
+.requirement-name-input .semi-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* 表单操作按钮 */
+.form-actions {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+}
+
+.confirm-button {
+  padding: 12px 32px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  min-width: 120px !important;
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.confirm-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(55, 65, 81, 0.3) !important;
+}
+
+/* 错误状态 */
+.error-content {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .requirement-form-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .header-info {
+    order: 1;
+  }
+  
+  .header-button {
+    order: 0;
+    align-self: flex-start;
+  }
+  
+  .header-actions {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .requirement-form-content {
+    padding: 20px 16px;
+  }
+  
+  .requirement-form-card {
+    padding: 24px 20px !important;
+  }
+  
+  .form-content {
+    gap: 24px;
+  }
+  
+  .form-field {
+    padding-bottom: 20px;
+  }
+  
+  .field-display {
+    padding: 12px 16px;
+    min-height: 50px;
+  }
+  
+  .form-actions {
+    width: 100%;
+  }
+  
+  .confirm-button {
+    width: 100% !important;
+  }
+}
+
+/* 动画效果 */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.requirement-form-card {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.form-field {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.form-field:nth-child(1) { animation-delay: 0.1s; }
+.form-field:nth-child(2) { animation-delay: 0.2s; }
+.form-field:nth-child(3) { animation-delay: 0.3s; }
+.form-field:nth-child(4) { animation-delay: 0.4s; }
+.form-field:nth-child(5) { animation-delay: 0.5s; }
+.form-field:nth-child(6) { animation-delay: 0.6s; }
+.form-field:nth-child(7) { animation-delay: 0.7s; }
