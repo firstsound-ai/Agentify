@@ -1,0 +1,230 @@
+/* 问卷页面样式 */
+.questionnaire-content {
+  min-height: 100vh;
+  /* background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); */
+  padding: 10px 10px;
+}
+
+.questionnaire-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.questionnaire-header {
+  margin-bottom: 12px;
+}
+
+.generating-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.generating-icon .semi-spin {
+  color: #374151 !important;
+}
+
+.generating-icon .semi-spin .semi-spin-dot {
+  background-color: #374151 !important;
+}
+
+.completion-card {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+.progress-section {
+  background: white;
+  padding: 10px;
+  border-radius: 16px;
+  margin-bottom: 8px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-input-summary {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.question-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: none;
+  padding: 8px;
+}
+
+.question-content {
+  margin-bottom: 10px;
+}
+
+.options-container {
+  margin: 8px 0;
+}
+
+.option-item {
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.option-item:hover {
+  background: #f8fafc;
+}
+
+.option-content {
+  margin-left: 8px;
+}
+
+.option-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.option-description {
+  font-size: 14px;
+  color: #718096;
+  line-height: 1.4;
+}
+
+.checkbox-option {
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.checkbox-option:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.checkbox-option.selected {
+  border-color: #000000;
+  background: #ebf8ff;
+  box-shadow: 0 4px 16px rgba(66, 153, 225, 0.2);
+}
+
+.checkbox-option .option-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 6px;
+}
+
+.checkbox-option .option-description {
+  font-size: 14px;
+  color: #718096;
+}
+
+.question-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 32px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.completion-card {
+  padding: 60px 40px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.completion-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.completion-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+
+.custom-option {
+  flex-direction: column;
+  align-items: flex-start !important;
+}
+
+.custom-input-container {
+  width: 100%;
+  padding-left: 32px;
+  margin-top: 12px;
+}
+
+.custom-input-container .semi-input-wrapper {
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.custom-input-container .semi-input-wrapper:focus-within {
+  border-color: #374151 !important;
+  box-shadow: 0 0 0 2px rgba(55, 65, 81, 0.1) !important;
+}
+
+.additional-requirements-container {
+  margin: 24px 0;
+}
+
+.additional-requirements-container .semi-input {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+.additional-requirements-container .semi-input::placeholder {
+  color: #9ca3af !important;
+  font-style: italic;
+}
+
+.question-navigation .semi-space {
+  gap: 12px !important;
+}
+
+/* 跳过按钮样式 */
+.question-navigation .semi-button:not(.semi-button-primary):not(:first-child) {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.question-navigation .semi-button:not(.semi-button-primary):not(:first-child):hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e0 !important;
+  color: #475569 !important;
+}
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .questionnaire-content {
+    padding: 20px 16px;
+  }
+  
+  .question-card {
+    padding: 24px 20px;
+  }
+  
+  .completion-card {
+    padding: 40px 24px;
+  }
+  
+  .question-navigation {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .question-navigation button {
+    width: 100%;
+  }
+}
