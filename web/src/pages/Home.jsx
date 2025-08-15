@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Button, Typography, TextArea, Progress, Modal } from '@douyinfe/semi-ui';
 import { IconFlipHorizontal, IconCrown, IconSearch, IconDesktop, IconFile, IconCloud } from '@douyinfe/semi-icons';
-import './Home.css'; 
+import './Home.css';
 import request from '../utils/request';
 
 const { Content } = Layout;
@@ -10,7 +10,7 @@ const { Title, Text } = Typography;
 
 const AnimatedTitle = ({ text, style }) => {
   const [visibleChars, setVisibleChars] = useState(0);
-  
+
   useEffect(() => {
     const timer = setInterval(() => {
       setVisibleChars(prev => {
@@ -21,10 +21,10 @@ const AnimatedTitle = ({ text, style }) => {
         return prev;
       });
     }, 150);
-    
+
     return () => clearInterval(timer);
   }, [text]);
-  
+
   return (
     <Title style={style}>
       {text.split('').map((char, index) => (
@@ -44,15 +44,23 @@ const AnimatedTitle = ({ text, style }) => {
 
 function Home() {
   const navigate = useNavigate();
-  const [mainInput, setMainInput] = useState(''); 
+  const [mainInput, setMainInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('正在创建需求...');
   const [progress, setProgress] = useState(0);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [isCancelled, setIsCancelled] = useState(false);
   const [activeTab, setActiveTab] = useState('featured');
-  
+  const [currentSubtitleIndex, setCurrentSubtitleIndex] = useState(0);
+
   const pollTimer = useRef(null);
+  const subtitleTimer = useRef(null);
+
+  // 轮播文字数组
+  const subtitles = [
+    'Agent构建，从未如此简单',
+    '只用自然语言，定制你的私人Agent'
+  ];
 
   // 清理定时器
   useEffect(() => {
@@ -60,8 +68,24 @@ function Home() {
       if (pollTimer.current) {
         clearTimeout(pollTimer.current);
       }
+      if (subtitleTimer.current) {
+        clearInterval(subtitleTimer.current);
+      }
     };
   }, []);
+
+  // 字幕轮播效果
+  useEffect(() => {
+    subtitleTimer.current = setInterval(() => {
+      setCurrentSubtitleIndex(prev => (prev + 1) % subtitles.length);
+    }, 3000); // 每3秒切换一次
+
+    return () => {
+      if (subtitleTimer.current) {
+        clearInterval(subtitleTimer.current);
+      }
+    };
+  }, [subtitles.length]);
 
   // 取消生成
   const handleCancelLoading = () => {
@@ -86,7 +110,7 @@ function Home() {
       const result = await request.post('/api/requirement/create', {
         initial_requirement: userInput
       });
-      
+
       if (result.code === 0) {
         return result.data.thread_id;
       } else {
@@ -117,14 +141,14 @@ function Home() {
 
     const poll = async () => {
       if (isCancelled) return;
-      
+
       try {
         attempts++;
         // 直接计算并设置进度
         const pollProgress = ((attempts / maxAttempts) * 100);
         updateProgress(Math.round(Math.min(pollProgress, 95)));
         setLoadingText(`正在生成需求问卷...`);
-        
+
         const statusResult = await getRequirementStatus(threadId);
         console.log('轮询状态结果:', statusResult);
 
@@ -134,7 +158,7 @@ function Home() {
           // 问卷已生成，设置为100%
           updateProgress(100);
           setLoadingText('问卷生成完成，正在跳转...');
-          
+
           // 短暂延迟让用户看到完成状态
           setTimeout(() => {
             if (!isCancelled) {
@@ -142,12 +166,12 @@ function Home() {
               setIsLoading(false);
               setProgress(0);
               // 跳转到问卷页面
-              navigate('/questionnaire', { 
-                state: { 
+              navigate('/questionnaire', {
+                state: {
                   userInput: userInput,
                   threadId: threadId,
                   questionnaire: statusResult.data.questionnaire
-                } 
+                }
               });
             }
           }, 1500);
@@ -192,11 +216,11 @@ function Home() {
     setIsCancelled(false);
     setProgress(0);
     setLoadingText('正在创建需求...');
-    
+
     try {
       // 第一步：设置初始进度
       updateProgress(1);
-      
+
       // 第二步：创建需求并获取thread_id
       setLoadingText('正在创建需求...');
       const threadId = await createRequirement(mainInput.trim());
@@ -362,30 +386,32 @@ function Home() {
           <div className="welcome-header">
             <div className="brand-section">
               <div className="logo-container">
-                <img 
-                  src="/logo.png" 
-                  alt="Agentify Logo" 
+                <img
+                  src="/logo.png"
+                  alt="Agentify Logo"
                   className="brand-logo"
                 />
               </div>
               <div className="text-container">
-                <AnimatedTitle 
+                <AnimatedTitle
                   text="灵感，即刻应用"
-                  style={{ 
-                    fontSize: '56px', 
-                    margin: 0, 
-                    textAlign: 'center', 
+                  style={{
+                    fontSize: '56px',
+                    margin: 0,
+                    textAlign: 'center',
                     color: '#000000',
                     lineHeight: '1.2'
                   }}
                 />
-                <Text type="secondary" style={{ 
-                  fontSize: '16px', 
+                <Text type="secondary" style={{
+                  fontSize: '16px',
                   marginTop: '8px',
                   display: 'block',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  transition: 'opacity 0.5s ease-in-out',
+                  minHeight: '20px'
                 }}>
-                  用自然语言，创造你的APP
+                  {subtitles[currentSubtitleIndex]}
                 </Text>
               </div>
             </div>
@@ -405,10 +431,10 @@ function Home() {
             />
             <div className="button-section">
               <Button
-                theme="solid" 
-                type="primary" 
+                theme="solid"
+                type="primary"
                 icon={<IconFlipHorizontal />}
-                onClick={handleMainSubmit} 
+                onClick={handleMainSubmit}
                 disabled={!mainInput.trim() || isLoading}
                 size="large"
                 className="submit-button"
@@ -456,7 +482,7 @@ function Home() {
                 );
               })}
             </div>
-            
+
             {/* Tab 内容 */}
             <div className="tab-content">
               <div className="prompts-grid">
@@ -474,7 +500,7 @@ function Home() {
             </div>
           </div>
         </div>
-        
+
         {/* 加载进度模态框 */}
         <Modal
           title="正在处理您的需求"
