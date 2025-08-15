@@ -52,7 +52,6 @@ def finalize_document_node(state: GraphState):
             "additional_requirements": additional_requirements,
         }
     )
-
     print("生成的最终文档:", response.content)
     return {"final_document": response}
 

@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
     API_HOST: str = "0.0.0.0"
-    API_PORT: int = 8000
+    API_PORT: int = 8080
     API_RELOAD: bool = True
 
     DB_HOST: str = "localhost"
