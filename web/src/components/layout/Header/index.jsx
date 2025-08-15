@@ -31,10 +31,10 @@ function Header({ darkMode, setDarkMode }) {
           <Button style={{ color: '#5c5c5cff', borderRadius: 10 }} icon={<IconSetting />} />
           <ButtonGroup size='default' style={{ margin: 4, borderRadius: 10, overflow: 'hidden' }}>
             <Button disabled style={{ color: '#5c5c5cff' }}><IconBolt />3</Button>
-            <Button>Upgrade</Button>
+            <Button style={{ color: '#000000' }}>Upgrade</Button>
           </ButtonGroup>
-          <Avatar size="small" style={{ backgroundColor: '#f56565' }}>
-            CJH
+          <Avatar size="small" style={{ backgroundColor: '#4a4646ff' }}>
+            User
           </Avatar>
         </Space>
       </div>

@@ -1,7 +1,6 @@
 /* 问卷页面样式 */
 .questionnaire-content {
   min-height: 100vh;
-  /* background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); */
   padding: 10px 10px;
 }
 
