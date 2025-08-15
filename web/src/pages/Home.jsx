@@ -370,9 +370,9 @@ function Home() {
               </div>
               <div className="text-container">
                 <AnimatedTitle 
-                  text="Agent构建，从未如此简单"
+                  text="Agent，聊出来"
                   style={{ 
-                    fontSize: '56px', 
+                    fontSize: '56px',
                     margin: 0, 
                     textAlign: 'center', 
                     color: '#000000',
@@ -385,7 +385,7 @@ function Home() {
                   display: 'block',
                   textAlign: 'left'
                 }}>
-                  只用自然语言，定制你的私人Agent
+                  告别复杂配置，用对话构建你的Agent
                 </Text>
               </div>
             </div>
