@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, Button, Typography, TextArea, Tabs, TabPane, Progress, Modal } from '@douyinfe/semi-ui';
-import { IconFlipHorizontal } from '@douyinfe/semi-icons';
+import { Layout, Button, Typography, TextArea, Progress, Modal } from '@douyinfe/semi-ui';
+import { IconFlipHorizontal, IconCrown, IconSearch, IconDesktop, IconFile, IconCloud } from '@douyinfe/semi-icons';
 import './Home.css'; 
 import request from '../utils/request';
 
@@ -50,6 +50,7 @@ function Home() {
   const [progress, setProgress] = useState(0);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [isCancelled, setIsCancelled] = useState(false);
+  const [activeTab, setActiveTab] = useState('featured');
   
   const pollTimer = useRef(null);
 
@@ -418,25 +419,59 @@ function Home() {
             </div>
           </div>
 
-          <div className="quick-prompts" style={{ marginTop: '24px' }}>
-            <Tabs className="prompts-tabs" type="button" defaultActiveKey="featured">
-              {Object.entries(promptCategories).map(([key, category]) => (
-                <TabPane tab={category.name} itemKey={key} key={key}>
-                  <div className="prompts-grid">
-                    {category.prompts.map((prompt, index) => (
-                      <div
-                        key={index}
-                        className={`prompt-card ${isLoading ? 'disabled' : ''}`}
-                        onClick={() => !isLoading && setMainInput(prompt.content)}
-                      >
-                        <div className="prompt-card-title">{prompt.title}</div>
-                        <div className="prompt-card-description">{prompt.description}</div>
-                      </div>
-                    ))}
+          <div style={{ marginTop: '24px' }}>
+            <div className="tab-buttons-container">
+              {Object.entries(promptCategories).map(([key, category]) => {
+                // 为不同类别定义图标
+                const getIcon = (categoryKey) => {
+                  switch (categoryKey) {
+                    case 'featured':
+                      return <IconCrown />;
+                    case 'research':
+                      return <IconSearch />;
+                    case 'productivity':
+                      return <IconDesktop />;
+                    case 'education':
+                      return <IconFile />;
+                    case 'data':
+                      return <IconCloud />;
+                    default:
+                      return <IconCrown />;
+                  }
+                };
+
+                return (
+                  <Button
+                    icon={getIcon(key)}
+                    key={key}
+                    className={`tab-button ${activeTab === key ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab(key);
+                    }}
+                    disabled={isLoading}
+                    type='secondary'
+                  >
+                    {category.name}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            {/* Tab 内容 */}
+            <div className="tab-content">
+              <div className="prompts-grid">
+                {promptCategories[activeTab].prompts.map((prompt, index) => (
+                  <div
+                    key={index}
+                    className={`prompt-card ${isLoading ? 'disabled' : ''}`}
+                    onClick={() => !isLoading && setMainInput(prompt.content)}
+                  >
+                    <div className="prompt-card-title">{prompt.title}</div>
+                    <div className="prompt-card-description">{prompt.description}</div>
                   </div>
-                </TabPane>
-              ))}
-            </Tabs>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
         

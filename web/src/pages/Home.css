@@ -153,43 +153,65 @@
   cursor: not-allowed !important;
 }
 
-.quick-prompts {
-  text-align: center;
-  margin-top: 32px;
+.tab-buttons-container {
+  display: flex;
+  margin-bottom: 16px;
+  width: 70%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 16px;
+  padding: 6px;
+  border: 1px solid #f1f5f9;
+  gap: 4px;
 }
 
-.quick-prompts .semi-typography {
-  color: #4a5568 !important;
-  font-weight: 500;
-  margin-bottom: 16px !important;
+.tab-buttons-container .tab-button {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-weight: 600 !important;
+  flex: 1 !important;
+  min-height: 36px !important;
+  margin: 0 !important;
+  background: transparent !important;
+  color: #64748b !important;
+  border-radius: 8px !important;
+  border: none !important;
+  font-size: 15px !important;
+  letter-spacing: 0.3px !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-/* Tab 样式 */
-.prompts-tabs {
-  margin-bottom: 20px;
+.tab-buttons-container .tab-button:hover:not(.active) {
+  background: #f8fafc !important;
+  color: #475569 !important;
 }
 
-.prompts-tabs .semi-tabs-bar {
-  justify-content: center;
+.tab-buttons-container .tab-button:hover:not(.active)::before {
+  opacity: 1;
 }
 
-.prompts-tabs .semi-tabs-tab {
-  font-weight: 500;
-  color: #6b7280;
-  padding: 8px 16px;
-  margin: 0 4px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.prompts-tabs .semi-tabs-tab:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.prompts-tabs .semi-tabs-tab-active {
-  background: #000000 !important;
+.tab-buttons-container .tab-button.active {
+  background: linear-gradient(135deg, #1e293b, #334155) !important;
   color: #ffffff !important;
+  z-index: 2 !important;
+}
+
+.tab-buttons-container .tab-button.active::before {
+  opacity: 0;
+}
+
+.tab-buttons-container .tab-button.active:hover {
+  background: linear-gradient(135deg, #334155, #475569) !important;
+  color: #ffffff !important;
+}
+
+.tab-buttons-container .tab-button:focus {
+  outline: none !important;
+}
+
+.tab-content {
+  width: 100%;
 }
 
 .prompts-grid {
@@ -234,23 +256,7 @@
   line-height: 1.4 !important;
 }
 
-.quick-prompts .semi-button {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 25px !important;
-  color: #4a5568 !important;
-  transition: all 0.3s ease !important;
-  font-weight: 500 !important;
-  margin: 4px !important;
-}
 
-.quick-prompts .semi-button:hover {
-  background: #f7fafc !important;
-  border-color: #cbd5e0 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  color: #2d3748 !important;
-}
 
 /* ===== 响应式设计 ===== */
 @media (max-width: 768px) {
@@ -281,6 +287,20 @@
   .prompts-grid {
     grid-template-columns: 1fr;
   }
+  
+  .tab-buttons-container {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px;
+    width: 85%;
+  }
+  
+  .tab-button {
+    min-width: calc(50% - 3px) !important;
+    flex: 1 1 calc(50% - 3px) !important;
+    min-height: 42px !important;
+    font-size: 14px !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -298,8 +318,11 @@
     font-size: 15px !important;
   }
   
-  .quick-prompts .semi-button {
+
+  
+  .tab-button {
     font-size: 13px !important;
-    padding: 6px 12px !important;
+    min-height: 40px !important;
+    letter-spacing: 0.2px !important;
   }
 }
