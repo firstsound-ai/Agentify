@@ -1,0 +1,516 @@
+/* 工作流页面样式 - 使用局部化的类名 */
+.workflow-page-content {
+  min-height: 100vh;
+  padding: 12px 10px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.workflow-page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 头部区域 */
+.workflow-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 14px;
+}
+
+.workflow-back-button,
+.workflow-refresh-button {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 12px !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(10px) !important;
+  transition: all 0.3s ease !important;
+  flex-shrink: 0;
+}
+
+.workflow-back-button:hover,
+.workflow-refresh-button:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: #cbd5e0 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.workflow-header-info {
+  flex: 1;
+  text-align: center;
+}
+
+.workflow-header-actions {
+  flex-shrink: 0;
+}
+
+/* 左右布局 */
+.workflow-page-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  min-height: 600px;
+}
+
+/* 左侧面板 */
+.workflow-left-panel {
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  padding: 6px !important;
+  backdrop-filter: blur(20px) !important;
+  overflow: hidden;
+}
+
+/* 右侧面板 */
+.workflow-right-panel {
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  padding: 6px !important;
+  backdrop-filter: blur(20px) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 加载卡片 */
+.workflow-loading-card {
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  padding: 20px !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.workflow-loading-content {
+  text-align: center;
+  padding: 10px 10px;
+}
+
+.workflow-loading-animation {
+  margin-bottom: 20px;
+}
+
+.workflow-loading-animation .semi-spin {
+  color: #374151 !important;
+}
+
+.workflow-progress-section {
+  margin-bottom: 20px;
+}
+
+.workflow-progress-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.workflow-requirement-summary {
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 工作流信息 */
+.workflow-info {
+  margin-bottom: 6px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 工作流步骤 */
+.workflow-steps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.workflow-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.workflow-step-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.workflow-step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+  flex-shrink: 0;
+  color: white;
+}
+
+.workflow-step-number.input {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.workflow-step-number.ai_processing {
+  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+.workflow-step-number.output {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+.workflow-step-number.validation {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+.workflow-step-number.search {
+  background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
+}
+
+.workflow-step-content {
+  flex: 1;
+  position: relative;
+}
+
+.workflow-step-type-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: white;
+}
+
+.workflow-step-type-badge.input {
+  background: #2196F3;
+}
+
+.workflow-step-type-badge.ai_processing {
+  background: #9C27B0;
+}
+
+.workflow-step-type-badge.output {
+  background: #4CAF50;
+}
+
+.workflow-step-type-badge.validation {
+  background: #FF9800;
+}
+
+/* 新增样式 */
+.workflow-step-type-badge.search {
+  background: #00BCD4;
+}
+
+/* 循环节点的特殊样式 */
+.workflow-step-number.loop {
+  background: linear-gradient(135deg, #FF5722 0%, #D84315 100%);
+}
+
+.workflow-step-type-badge.loop {
+  background: #FF5722;
+}
+
+.workflow-step-badges-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.workflow-step-next-info {
+  font-size: 11px;
+  color: #888;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.workflow-step-branch-info {
+  font-size: 11px;
+  color: #666;
+  background: #e3f2fd;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #2196f3;
+}
+
+.workflow-step-loop-badge {
+  font-size: 11px;
+  color: #f57c00;
+  background: #fff3e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #ffcc02;
+}
+
+.workflow-stats-info {
+  margin: 24px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.workflow-mermaid-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #fafbfc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: auto;
+}
+
+.workflow-mermaid-diagram {
+  width: 100%;
+  text-align: center;
+}
+
+.workflow-mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 工作流操作 */
+.workflow-actions {
+  margin-top: auto;
+  padding-top: 4px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.workflow-use-button {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+  border: none !important;
+  color: white !important;
+  padding: 12px 32px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  min-width: 160px !important;
+  transition: all 0.3s ease !important;
+}
+
+.workflow-use-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(55, 65, 81, 0.3) !important;
+}
+
+/* 错误状态 */
+.workflow-error-content {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+/* 聊天相关样式 */
+.workflow-chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 16px 0;
+}
+
+.workflow-chat-header {
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 12px 12px 0 0;
+  margin: -24px -24px 0 -24px;
+}
+
+.workflow-chat-footer {
+  padding: 12px 24px 20px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 12px 12px;
+  margin: 0 -24px -24px -24px;
+}
+
+/* Mermaid图表样式优化 */
+.workflow-mermaid-container .mermaid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+.workflow-mermaid-container .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Semi Design Chat组件样式覆盖 - 只影响workflow页面内的chat */
+.workflow-right-panel .semi-chat {
+  border: none !important;
+  background: transparent !important;
+  flex: 1 !important;
+}
+
+.workflow-right-panel .semi-chat-chatBox {
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+}
+
+.workflow-right-panel .semi-chat-inputBox {
+  border-top: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+}
+
+.workflow-right-panel .semi-chat-inputBox-input {
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+.workflow-right-panel .semi-chat-inputBox-input:focus {
+  border-color: #374151 !important;
+  box-shadow: 0 0 0 2px rgba(55, 65, 81, 0.1) !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .workflow-page-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .workflow-left-panel,
+  .workflow-right-panel {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .workflow-page-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .workflow-header-info {
+    order: 1;
+  }
+  
+  .workflow-back-button {
+    order: 0;
+    align-self: flex-start;
+  }
+  
+  .workflow-header-actions {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .workflow-page-content {
+    padding: 20px 16px;
+  }
+  
+  .workflow-left-panel,
+  .workflow-right-panel {
+    padding: 20px !important;
+  }
+  
+  .workflow-loading-card {
+    padding: 24px 20px !important;
+  }
+  
+  .workflow-loading-content {
+    padding: 20px 10px;
+  }
+  
+  .workflow-step-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .workflow-step-number {
+    align-self: center;
+  }
+  
+  .workflow-step-type-badge {
+    position: static;
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+  
+  .workflow-use-button {
+    width: 100% !important;
+  }
+}
+
+.workflow-left-panel,
+.workflow-right-panel {
+  animation: workflowFadeInUp 0.6s ease-out;
+}
+
+.workflow-left-panel {
+  animation-delay: 0.1s;
+}
+
+.workflow-right-panel {
+  animation-delay: 0.2s;
+}
+
+.workflow-step-item {
+  animation: workflowFadeInUp 0.4s ease-out;
+}
+
+.workflow-step-item:nth-child(1) { animation-delay: 0.1s; }
+.workflow-step-item:nth-child(2) { animation-delay: 0.2s; }
+.workflow-step-item:nth-child(3) { animation-delay: 0.3s; }
+.workflow-step-item:nth-child(4) { animation-delay: 0.4s; }
+
+/* 进度条样式 */
+.workflow-progress-container .semi-progress-line-outer {
+  background-color: #e2e8f0 !important;
+  border-radius: 8px !important;
+  height: 12px !important;
+}
+
+.workflow-progress-container .semi-progress-line-inner {
+  background: linear-gradient(90deg, #374151 0%, #1f2937 100%) !important;
+  border-radius: 8px !important;
+  transition: width 0.3s ease !important;
+}
+
+.workflow-progress-container .semi-progress-text {
+  color: #374151 !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}

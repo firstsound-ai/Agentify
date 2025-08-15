@@ -16,6 +16,7 @@ function RequirementForm() {
   
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [formData, setFormData] = useState({
     requirement_name: requirementData?.requirement_name || '',
     mission_statement: requirementData?.mission_statement || '',
@@ -75,8 +76,35 @@ function RequirementForm() {
     }
   };
 
-  const handleConfirmRequirement = () => {
-    // navigate('/next-page', { state: { threadId, formData } });
+  const handleConfirmRequirement = async () => {
+    setIsConfirming(true);
+    
+    try {
+      // 创建蓝图
+      const result = await request.post(`/api/blueprint/create/${threadId}`, formData);
+      
+      if (result.code === 0) {
+        const blueprintId = result.data.blueprint_id;
+        
+        // 跳转到工作流页面，传递蓝图ID
+        navigate('/workflowchat', { 
+          state: { 
+            threadId: threadId,
+            blueprintId: blueprintId,
+            formData: formData,
+            userInput: location.state?.userInput || ''
+          } 
+        });
+      } else {
+        console.error('创建蓝图失败:', error);
+        // Toast.error(result.message || '创建蓝图失败');
+      }
+    } catch (error) {
+      console.error('创建蓝图失败:', error);
+      // Toast.error('创建蓝图失败，请重试');
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   const fieldLabels = {
@@ -209,10 +237,11 @@ function RequirementForm() {
               <Button 
                 type="primary"
                 size="large"
+                loading={isConfirming}
                 onClick={handleConfirmRequirement}
                 className="confirm-button"
               >
-                确认需求
+                {isConfirming ? '正在创建蓝图...' : '确认需求'}
               </Button>
             </div>
           )}

@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Questionnaire from './pages/Questionnaire';
 import './App.css';
 import RequirementForm from './pages/RequirementForm';
+import WorkflowChat from './pages/WorkflowChat';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/questionnaire" element={<Questionnaire />} />
             <Route path="/requirement-form" element={<RequirementForm />} />
+            <Route path="/workflowchat" element={<WorkflowChat />} />
           </Routes>
         </div>
       </Layout>
