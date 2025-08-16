@@ -21,6 +21,7 @@ class BlueprintDAO:
             user_id=user_info.id,
             status=TaskStatus.PENDING.value,
             progress="等待处理中...",
+            is_current=True
         )
         db.add(new_blueprint)
         return blueprint_id
@@ -48,11 +49,42 @@ class BlueprintDAO:
                 setattr(blueprint, "error_message", error_message)
             return blueprint
         return None
+    
+    @staticmethod
+    def save_new_blueprint(
+            db: Session,
+            thread_id: str,
+            workflow: Optional[dict],
+            mermaid_code: Optional[str]
+        ):
+        latest_blueprint = db.query(Blueprint).filter(Blueprint.thread_id == thread_id).order_by(Blueprint.created_at.desc()).first()
+
+        if latest_blueprint:
+            latest_blueprint.is_current = False
+            db.add(latest_blueprint)
+            db.flush()
+
+        new_blueprint = Blueprint(
+            blueprint_name=latest_blueprint.blueprint_name,
+            user_id=latest_blueprint.user_id,
+            status=TaskStatus.COMPLETED.value,
+            thread_id=thread_id,
+            workflow=workflow,
+            mermaid_code=mermaid_code,
+            progress="工作流和流程图均已生成",
+            is_current=True
+        )
+        db.add(new_blueprint)
 
     @staticmethod
     def get_blueprint_list(db: Session, thread_id: str):
         blueprints = db.query(Blueprint).filter(Blueprint.thread_id == thread_id).all()
         return blueprints
+    
+    @staticmethod
+    def get_lastest_blueprint(db: Session, thread_id: str):
+        latest_blueprint = db.query(Blueprint).filter(Blueprint.thread_id == thread_id).order_by(Blueprint.created_at.desc()).first()
+        return latest_blueprint
 
     @staticmethod
     def get_blueprint_by_id(db: Session, blueprint_id: str) -> Optional[Blueprint]:

@@ -15,6 +15,38 @@ WORKFLOW_PROMPT = ChatPromptTemplate.from_messages(
 
 要求所生成的工作流务必充分体现需求中的流程，灵活运用循环、分支等结构。
 
+# 规则
+
+nodeType有且仅限于以下几种：
+
+TRIGGER_USER_INPUT 捕捉用户的输入 
+
+ACTION_WEB_SEARCH 搜索网络信息
+
+ACTION_LLM_TRANSFORM 调用LLM生成能力
+
+CONDITION_BRANCH 条件分支
+
+LOOP_START 开始循环
+
+LOOP_END 结束循环
+
+OUTPUT_FORMAT 格式化输出
+
+nodes的编号从node-001开始，按顺序编号
+
+遇到顺序执行中的子节点，记作node-xxx-a、node-xxx-b等
+
+遇条件分支则变成node-cond-xxx
+
+遇循环变成node-loop-start-xxx（循环开始）和 node-loop-end-xxx（循环结束）
+
+最终节点为node-final-xxx
+
+xxx代指编号（如001,002，003）
+
+尽量node编号不超过010，除非工作流非常复杂。
+
 # 输出格式
 
 你的全部回答**必须**是一个单一、有效的JSON对象，并用 ```json ... ``` 代码块包裹。**严禁**在JSON代码块前后包含任何文本、解释或Markdown格式。
@@ -117,7 +149,7 @@ MERMAID_PROMPT = ChatPromptTemplate.from_messages(
 
 # 输出格式
 
-要求严格输出Mermaid代码，无任何注释、Markdown格式
+要求严格输出Mermaid代码，无任何注释、Markdown格式、解释。
 
 ## 输出的Mermaid代码示例：
 graph TD
@@ -151,4 +183,103 @@ graph TD
         "WORKFLOW: \n{workflow}"
     )
   ]
+)
+
+
+WORKFLOW_REFINE_PROMPT = ChatPromptTemplate.from_messages(
+  [
+    (
+        "system",
+        """
+# 角色：AI工作流设计师
+
+你是一位经验丰富的AI工作流设计师，擅长根据用户最新需求修改workflow，生成新的JSON格式的工作流。
+
+# 任务
+
+你的任务是根据用户最新需求 `[REFINE_REQUIREMENT]` 将 `[OLD_WORKFLOW]` (工作流) 进行局部修改，输出新的JSON工作流。
+
+# 规则
+
+nodeType有且仅限于以下几种：
+
+TRIGGER_USER_INPUT 捕捉用户的输入 
+
+ACTION_WEB_SEARCH 搜索网络信息
+
+ACTION_LLM_TRANSFORM 调用LLM生成能力
+
+CONDITION_BRANCH 条件分支
+
+LOOP_START 开始循环
+
+LOOP_END 结束循环
+
+OUTPUT_FORMAT 格式化输出
+
+nodes的编号从node-001开始，按顺序编号
+
+遇到顺序执行中的子节点，记作node-xxx-a、node-xxx-b等
+
+遇条件分支则变成node-cond-xxx
+
+遇循环变成node-loop-start-xxx（循环开始）和 node-loop-end-xxx（循环结束）
+
+最终节点为node-final-xxx
+
+xxx代指编号（如001,002，003）
+
+# 输出格式
+
+你的全部回答**必须**是一个单一、有效的JSON对象，并用 ```json ... ``` 代码块包裹。**严禁**在JSON代码块前后包含任何文本、解释或Markdown格式。
+"""
+    ),
+    (
+        "user",
+        "OLD_WORKFLOW: \n{workflow} REFINE_REQUIREMENT: \n{refine_requirement}"
+    )
+  ]
+)
+
+CHAT_PROMPT = ChatPromptTemplate.from_messages(
+    [(
+        "system",
+        """
+角色：AI 工作流沟通师
+
+你是一位善于捕捉用户需求的工作流沟通师，擅长根据最新的用户对话，给出合适的回复。
+
+# 任务
+
+你的任务是根据现有最新的 `[WORKFLOW]` (工作流)，以及用户的聊天对话，给出合适的聊天回答。
+
+用户可能是针对工作流进行提问，也可能是要求修改部分细节，请你根据情况回答，回答内容不要过长。
+
+# 输出
+
+以自然语言输出，符合日常对话流畅性，不允许使用markdown、json等格式。
+
+# 示例
+1. 好的，根据您的需求，需要增加一个条件分支，我将立马更新蓝图，请问还有别的问题吗？
+
+2. 关于节点3，这个步骤是检查公司是否盈利的，分成两个条件分支。
+"""),
+    (
+        "user", 
+        "WORKFLOW:\n{workflow} MESSAGES:\n{messages}"
+    )
+])
+
+
+DECISION_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """你负责判断用户的最新对话内容（MESSAGES）是否和修改工作流有关。若是，返回'update', 若否，返回'end'。仅返回update或end，不允许输出其他任何内容"""
+        ),
+        (
+            "user", 
+            "MESSAGES:\n{messages}"
+        )
+    ]
 )

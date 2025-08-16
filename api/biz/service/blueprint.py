@@ -89,6 +89,41 @@ class BlueprintBIZ:
             raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
         
     @staticmethod
+    def get_latest_blueprint(
+        db: Session, 
+        thread_id: str, 
+    ):
+        try:
+            blueprint = BlueprintDAO.get_lastest_blueprint(db, thread_id)
+
+            response = BlueprintResponse(
+                blueprint_id=blueprint.id,
+                status=TaskStatus(getattr(blueprint, "status")),
+                progress=getattr(blueprint, "progress") or "处理中...",
+            )
+
+            workflow_data = getattr(blueprint, "workflow")
+            if workflow_data:
+                response.workflow = Workflow.model_validate(
+                    workflow_data
+                )
+            
+            mermaid_code_data = getattr(blueprint, "mermaid_code")  
+            if mermaid_code_data:
+                response.mermaid_code = mermaid_code_data
+
+            error_message = getattr(blueprint, "error_message")
+            if error_message:
+                response.error = error_message
+
+            return response
+
+        except GeneralException:
+            raise
+        except Exception as e:
+            raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
+        
+    @staticmethod
     def get_blueprint_status(
         db: Session, 
         blueprint_id: str, 
@@ -126,6 +161,21 @@ class BlueprintBIZ:
             raise
         except Exception as e:
             raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
+        
+    @staticmethod
+    def update_blueprint_by_thread(
+        thread_id, 
+        final_workflow, 
+        final_mermaid
+    ):
+        db = next(get_db())
+        BlueprintDAO.save_new_blueprint(
+            db,
+            thread_id,
+            workflow=final_workflow,
+            mermaid_code=final_mermaid
+        )
+        db.commit()
 
     @staticmethod
     def _process_blueprint_task(

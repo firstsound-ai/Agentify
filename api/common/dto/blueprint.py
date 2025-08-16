@@ -29,3 +29,7 @@ class BlueprintResponse(BaseModel):
     mermaid_code: Optional[str] = None
     error: Optional[str] = None
     progress: str
+
+
+class PromptRequest(BaseModel):
+    prompt: str
