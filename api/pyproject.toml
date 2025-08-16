@@ -7,6 +7,8 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116.1",
     "langchain>=0.3.27",
+    "langchain-community>=0.3.27",
+    "langchain-google-genai>=2.1.9",
     "langchain-openai>=0.3.29",
     "langgraph>=0.6.4",
     "langgraph-checkpoint-postgres>=2.0.23",
@@ -16,7 +18,9 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "requests>=2.32.4",
     "sqlalchemy>=2.0.42",
+    "sse-starlette>=3.0.2",
     "uvicorn>=0.35.0",
+    "v>=1",
 ]
 
 [[tool.uv.index]]
