@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Button, Typography, Card, Spin, Progress, Tabs, TabPane, Chat } from '@douyinfe/semi-ui';
-import { IconArrowLeft, IconRefresh, IconCode, IconBranch } from '@douyinfe/semi-icons';
+import { IconArrowLeft, IconCode, IconBranch } from '@douyinfe/semi-icons';
 import request from '../utils/request';
 import './WorkflowChat.css';
 import DynamicFlowchart from '../components/DynamicFlowchart';
@@ -24,29 +24,72 @@ function Workflow() {
   const [blueprintStatus, setBlueprintStatus] = useState('pending');
   const [mermaidCode, setMermaidCode] = useState('');
   const pollingRef = useRef(null);
-  const [messages, setMessages] = useState([
-    {
-      role: 'system',
+  const [messages, setMessages] = useState([]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
+  const messageIdRef = useRef(3);
+
+  // 初始化AI欢迎消息
+  const initializeWelcomeMessage = useCallback((stepCount) => {
+    const welcomeMessage = {
+      role: 'assistant',
       id: '1',
       createAt: Date.now(),
-      content: "Hello! I'm your AI assistant. I can help you understand and modify this workflow.",   
-    },
-    {
-      role: 'assistant',
-      id: '2',
-      createAt: Date.now(),
-      content: "您的工作流已经生成完成！您可以向我询问关于工作流的任何问题，或者提出修改建议。"
-    }
-  ]);
+      content: `根据您的需求，我为您草拟了一份包含 ${stepCount || 0} 个步骤的工作流程，您可以在左侧查看完整流程和流程图。如果您需要继续修改，可以通过聊天来修改您的工作流。`,
+      status: 'complete'
+    };
+    setMessages([welcomeMessage]);
+  }, []);
 
-  let messageId = 3;
+  // 初始化时显示欢迎消息
+  useEffect(() => {
+    if (messages.length === 0) {
+      initializeWelcomeMessage(0);
+    }
+  }, [initializeWelcomeMessage, messages.length]);
+
+  // 处理用户发送消息
+  const handleMessageSend = useCallback((content, attachment) => {
+    setIsAiTyping(true);
+    
+    // 创建AI响应消息（先显示加载状态）
+    const aiMessageId = String(messageIdRef.current++);
+    const aiResponseLoading = {
+      role: 'assistant',
+      id: aiMessageId,
+      createAt: Date.now(),
+      content: '',
+      status: 'loading'
+    };
+    
+    // 添加AI加载消息
+    setTimeout(() => {
+      setMessages(prev => [...prev, aiResponseLoading]);
+    }, 100);
+    
+    // 模拟AI响应
+    setTimeout(() => {
+      const mockResponse = `我理解您的问题："${content}"。这个工作流包含 ${workflowData?.steps?.length || 0} 个步骤，每个步骤都经过精心设计以确保高效执行。您想了解哪个具体步骤呢？`;
+      
+      setMessages(prev => prev.map(msg => 
+        msg.id === aiMessageId 
+          ? { ...msg, content: mockResponse, status: 'complete' }
+          : msg
+      ));
+      setIsAiTyping(false);
+    }, 1500);
+  }, [workflowData]);
+
+  // 处理消息变化
+  const handleChatsChange = useCallback((chats) => {
+    setMessages(chats);
+  }, []);
 
   // 轮询蓝图状态
   const pollBlueprintStatus = useCallback(async () => {
     try {
       const result = await request.get(`/api/blueprint/list/${threadId}`);
       
-      console.log('轮询蓝图状态响应:', result); // 添加调试日志
+      console.log('轮询蓝图状态响应:', result);
       
       if (result.code === 0 && result.data && result.data.blueprints && Array.isArray(result.data.blueprints)) {
         const currentBlueprint = result.data.blueprints.find(bp => bp.id === blueprintId);
@@ -93,6 +136,9 @@ function Workflow() {
         setIsLoading(false);
         setProgress(100);
         setCurrentStep('工作流创建完成！');
+        
+        // 初始化AI欢迎消息
+        initializeWelcomeMessage(parsedSteps.length);
       }
     } catch (error) {
       console.error('获取工作流数据失败:', error);
@@ -435,30 +481,15 @@ function Workflow() {
 
           <div className="workflow-header-actions">
             <Button 
-              icon={<IconRefresh />} 
+              type="primary"
+              // size="large"
               onClick={() => {
-                setIsLoading(true);
-                setProgress(0);
-                setCurrentStep('');
-                setWorkflowData(null);
-                setBlueprintStatus('pending');
-                setMermaidCode('');
-                
-                // 重新开始轮询
-                if (pollingRef.current) {
-                  clearInterval(pollingRef.current);
-                  pollingRef.current = null;
-                }
-                
-                // 重新轮询
-                setTimeout(() => {
-                  pollBlueprintStatus();
-                  pollingRef.current = setInterval(pollBlueprintStatus, 3000);
-                }, 1000);
+                console.log('开始使用工作流', workflowData);
+                // 这里可以添加确定使用工作流的逻辑
               }}
-              className="workflow-refresh-button"
+              className="workflow-use-button"
             >
-              重新生成
+              确定使用该工作流
             </Button>
           </div>
         </div>
@@ -495,21 +526,14 @@ function Workflow() {
                           </Text>
                           
                           {/* 显示节点类型和可能的分支 */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                          <div className="workflow-step-details">
                             <div className={`workflow-step-type-badge ${step.type}`}>
                               {step.typeText}
                             </div>
                             
                             {/* 显示是否为主路径 */}
                             {step.isMainPath === false && (
-                              <div style={{ 
-                                fontSize: '11px', 
-                                color: '#666',
-                                background: '#f5f5f5',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                border: '1px solid #ddd'
-                              }}>
+                              <div className="workflow-branch-badge">
                                 分支
                               </div>
                             )}
@@ -525,14 +549,7 @@ function Workflow() {
                             {step.edges.some(edge => 
                               workflowData.steps.some(s => s.id === edge.targetNodeId && s.stepNumber <= step.stepNumber)
                             ) && (
-                              <div style={{ 
-                                fontSize: '11px', 
-                                color: '#f57c00', 
-                                background: '#fff3e0',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                border: '1px solid #ffcc02'
-                              }}>
+                              <div className="workflow-loop-badge">
                                 循环
                               </div>
                             )}
@@ -540,7 +557,7 @@ function Workflow() {
                           
                           {/* 显示连接的下一步节点 */}
                           {step.edges.length > 0 && (
-                            <div style={{ marginTop: '8px', fontSize: '11px', color: '#888' }}>
+                            <div className="workflow-next-step-info">
                               下一步: {step.edges.map(edge => {
                                 const nextStep = workflowData.steps.find(s => s.id === edge.targetNodeId);
                                 return nextStep ? `${nextStep.name}(${edge.sourceHandle})` : edge.targetNodeId;
@@ -552,35 +569,22 @@ function Workflow() {
                     ))}
                   </div>
 
-                  <div style={{ 
-                    margin: '12px 0', 
-                    padding: '12px', 
-                    background: '#f8fafc', 
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0'
-                  }}>
+                  <div className="workflow-stats-summary">
                     <Text type="secondary" style={{ fontSize: '14px' }}>
                       工作流统计: 共 {workflowData?.steps?.length || 0} 个步骤
-                      {workflowData?.steps?.filter(s => s.nodeType === 'CONDITION_BRANCH').length > 0 && 
-                        ` • ${workflowData.steps.filter(s => s.nodeType === 'CONDITION_BRANCH').length} 个判断分支`
-                      }
-                      {workflowData?.steps?.some(s => s.edges.some(edge => 
-                        workflowData.steps.some(target => target.id === edge.targetNodeId && target.stepNumber <= s.stepNumber)
-                      )) && ' • 包含循环逻辑'}
+                      {(() => {
+                        const branchCount = workflowData?.steps?.filter(s => s.nodeType === 'CONDITION_BRANCH').length || 0;
+                        const hasLoop = workflowData?.steps?.some(s => s.edges.some(edge => 
+                          workflowData.steps.some(target => target.id === edge.targetNodeId && target.stepNumber <= s.stepNumber)
+                        ));
+                        return (
+                          <>
+                            {branchCount > 0 && ` • ${branchCount} 个判断分支`}
+                            {hasLoop && ' • 包含循环逻辑'}
+                          </>
+                        );
+                      })()}
                     </Text>
-                  </div>
-
-                  <div className="workflow-actions">
-                    <Button 
-                      type="primary"
-                      size="large"
-                      onClick={() => {
-                        console.log('开始使用工作流', workflowData);
-                      }}
-                      className="workflow-use-button"
-                    >
-                      确定使用该工作流
-                    </Button>
                   </div>
                 </div>
               </TabPane>
@@ -605,86 +609,39 @@ function Workflow() {
           </Card>
 
           {/* 右侧：AI助手聊天界面 */}
-          <Card className="workflow-right-panel">
+          <div className="workflow-right-panel">
             <div className="workflow-chat-header">
               <Title heading={4} style={{ margin: 0, color: '#1a202c' }}>
-                AI工作流助手 (开发ing)
+                AI工作流助手
               </Title>
-              <Text type="secondary" style={{ fontSize: '14px', marginTop: '4px' }}>
-                您可以询问关于工作流的任何问题
-              </Text>
             </div>
             
-            <div className="workflow-chat-container">
-              <Chat
-                chats={messages}
-                onChatsChange={setMessages}
-                renderChatNode={(chatData) => (
-                  <div className={`chat-message ${chatData.role}`}>
-                    <div className="message-content">
-                      {chatData.content}
-                    </div>
-                    <div className="message-time">
-                      {new Date(chatData.createAt).toLocaleTimeString()}
-                    </div>
-                  </div>
-                )}
-                onMessageSend={(content, attachment) => {
-                  const userMessage = {
-                    role: 'user',
-                    id: String(messageId++),
-                    createAt: Date.now(),
-                    content: content,
-                  };
-                  
-                  setMessages(prev => [...prev, userMessage]);
-                  
-                  // 模拟AI回复
-                  setTimeout(() => {
-                    const aiResponse = {
-                      role: 'assistant', 
-                      id: String(messageId++),
-                      createAt: Date.now(),
-                      content: `我理解您的问题："${content}"。这个工作流包含${workflowData?.steps?.length || 0}个步骤，每个步骤都经过精心设计以确保高效执行。您想了解哪个具体步骤呢？`
-                    };
-                    setMessages(prev => [...prev, aiResponse]);
-                  }, 1000);
-                }}
-                roleConfig={{
-                  user: {
-                    name: '用户',
-                    avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg'
-                  },
-                  assistant: {
-                    name: 'AI助手',
-                    avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/docs-icon.png'
-                  },
-                  system: {
-                    name: '系统',
-                    avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/docs-icon.png'
-                  }
-                }}
-                uploadProps={{
-                  action: '/api/upload',
-                  accept: '.txt,.doc,.pdf',
-                  maxSize: 1024 * 1024 * 10, // 10MB
-                  onSuccess: (response, file) => {
-                    console.log('Upload success:', response, file);
-                  },
-                  onError: (error, file) => {
-                    console.error('Upload error:', error, file);
-                  }
-                }}
-                style={{ height: '600px' }}
-              />
-            </div>
-            
-            <div className="workflow-chat-footer">
-              <Text type="secondary" style={{ fontSize: '11px', textAlign: 'center' }}>
-                AI助手还在开发哈哈哈
-              </Text>
-            </div>
-          </Card>
+            <Chat
+              chats={messages}
+              onChatsChange={handleChatsChange}
+              onMessageSend={handleMessageSend}
+              showStopGenerate={isAiTyping}
+              onStopGenerator={() => {
+                setIsAiTyping(false);
+                console.log('停止生成');
+              }}
+              roleConfig={{
+                user: {
+                  name: '用户',
+                  avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg'
+                },
+                assistant: {
+                  name: 'Agentify AI',
+                  avatar: '/logo.png'
+                }
+              }}
+              placeholder="输入您的问题或修改建议..."
+              mode="bubble"
+              align="leftRight"
+              enableUpload={false}
+            />
+          
+          </div>
         </div>
       </div>
     </Content>
