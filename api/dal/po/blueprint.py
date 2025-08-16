@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import JSON, Column, DateTime, String, Text
+from sqlalchemy import JSON, Column, DateTime, String, Text, Boolean
 from sqlalchemy.sql import func
 
 from dal.database import Base
@@ -27,3 +27,5 @@ class Blueprint(Base):
     updated_at = Column(
         DateTime(timezone=True), onupdate=func.now(), server_default=func.now()
     )
+
+    is_current = Column(Boolean, nullable=False, default=True)
