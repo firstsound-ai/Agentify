@@ -1,6 +1,5 @@
-from typing import List, Optional, TypedDict
+from typing import Optional, TypedDict
 
-from pydantic import BaseModel, Field
 
 class GraphState(TypedDict):
     """定义工作流中流动的数据状态。"""

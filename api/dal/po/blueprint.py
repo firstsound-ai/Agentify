@@ -9,14 +9,16 @@ from dal.database import Base
 class Blueprint(Base):
     __tablename__ = "blueprint"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4())) # blueprint_id
+    id = Column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )  # blueprint_id
     thread_id = Column(String(36))
     blueprint_name = Column(String(255), nullable=False)
 
     status = Column(String(50), nullable=False, default="pending")
     progress = Column(String(255), nullable=True, default="初始化中...")
 
-    workflow = Column(JSON, nullable=True) # the workflow of this blueprint
+    workflow = Column(JSON, nullable=True)  # the workflow of this blueprint
 
     mermaid_code = Column(Text, nullable=True)
 

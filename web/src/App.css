@@ -27,11 +27,9 @@
   align-items: center;
 }
 
-
 .main-layout {
   height: calc(100vh - 64px);
 }
-
 
 .left-sidebar {
   background: white;
@@ -46,7 +44,6 @@
   height: 100%;
   overflow-y: auto;
 }
-
 
 .nav-menu {
   margin-bottom: 20px;
@@ -266,15 +263,15 @@
     min-width: 280px !important;
     max-width: 280px !important;
   }
-  
+
   .chat-container {
     padding: 16px;
   }
-  
+
   .message-content {
     max-width: 85%;
   }
-  
+
   .header-content {
     padding: 0 16px;
   }

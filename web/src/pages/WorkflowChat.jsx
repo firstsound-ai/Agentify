@@ -1,10 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Button, Typography, Card, Spin, Progress, Tabs, TabPane, Chat } from '@douyinfe/semi-ui';
-import { IconArrowLeft, IconCode, IconBranch } from '@douyinfe/semi-icons';
-import request from '../utils/request';
-import './WorkflowChat.css';
-import DynamicFlowchart from '../components/DynamicFlowchart';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Layout,
+  Button,
+  Typography,
+  Card,
+  Spin,
+  Progress,
+  Tabs,
+  TabPane,
+  Chat,
+} from "@douyinfe/semi-ui";
+import { IconArrowLeft, IconCode, IconBranch } from "@douyinfe/semi-icons";
+import request from "../utils/request";
+import "./WorkflowChat.css";
+import DynamicFlowchart from "../components/DynamicFlowchart";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -12,17 +22,17 @@ const { Title, Text } = Typography;
 function Workflow() {
   const navigate = useNavigate();
   const location = useLocation();
-  const threadId = location.state?.threadId || '123';
-  const blueprintId = location.state?.blueprintId || '';
+  const threadId = location.state?.threadId || "123";
+  const blueprintId = location.state?.blueprintId || "";
   const formData = location.state?.formData || {};
-  const userInput = location.state?.userInput || '';
-  
+  const userInput = location.state?.userInput || "";
+
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState('');
+  const [currentStep, setCurrentStep] = useState("");
   const [workflowData, setWorkflowData] = useState(null);
-  const [blueprintStatus, setBlueprintStatus] = useState('pending');
-  const [mermaidCode, setMermaidCode] = useState('');
+  const [blueprintStatus, setBlueprintStatus] = useState("pending");
+  const [mermaidCode, setMermaidCode] = useState("");
   const pollingRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
@@ -32,11 +42,13 @@ function Workflow() {
   // 初始化AI欢迎消息
   const initializeWelcomeMessage = useCallback((stepCount) => {
     const welcomeMessage = {
-      role: 'assistant',
-      id: '1',
+      role: "assistant",
+      id: "1",
       createAt: Date.now(),
-      content: `根据您的需求，我为您草拟了一份包含 ${stepCount || 0} 个步骤的工作流程，您可以在左侧查看完整流程和流程图。如果您需要继续修改，可以通过聊天来修改您的工作流。`,
-      status: 'complete'
+      content: `根据您的需求，我为您草拟了一份包含 ${
+        stepCount || 0
+      } 个步骤的工作流程，您可以在左侧查看完整流程和流程图。如果您需要继续修改，可以通过聊天来修改您的工作流。`,
+      status: "complete",
     };
     setMessages([welcomeMessage]);
   }, []);
@@ -206,16 +218,23 @@ function Workflow() {
   const pollBlueprintStatus = useCallback(async () => {
     try {
       const result = await request.get(`/api/blueprint/list/${threadId}`);
-      
-      console.log('轮询蓝图状态响应:', result);
-      
-      if (result.code === 0 && result.data && result.data.blueprints && Array.isArray(result.data.blueprints)) {
-        const currentBlueprint = result.data.blueprints.find(bp => bp.id === blueprintId);
-        
+
+      console.log("轮询蓝图状态响应:", result);
+
+      if (
+        result.code === 0 &&
+        result.data &&
+        result.data.blueprints &&
+        Array.isArray(result.data.blueprints)
+      ) {
+        const currentBlueprint = result.data.blueprints.find(
+          (bp) => bp.id === blueprintId,
+        );
+
         if (currentBlueprint) {
           setBlueprintStatus(currentBlueprint.status);
-          
-          if (currentBlueprint.status === 'completed') {
+
+          if (currentBlueprint.status === "completed") {
             // 蓝图准备完成，获取工作流数据
             await fetchWorkflowData();
             // 停止轮询
@@ -226,10 +245,10 @@ function Workflow() {
           }
         }
       } else {
-        console.warn('蓝图列表数据格式不正确:', result);
+        console.warn("蓝图列表数据格式不正确:", result);
       }
     } catch (error) {
-      console.error('轮询蓝图状态失败:', error);
+      console.error("轮询蓝图状态失败:", error);
     }
   }, [threadId, blueprintId]);
 
@@ -237,30 +256,33 @@ function Workflow() {
   const fetchWorkflowData = async () => {
     try {
       const result = await request.get(`/api/blueprint/status/${blueprintId}`);
-      
+
       if (result.code === 0 && result.data && result.data.workflow) {
         const workflowInfo = result.data.workflow;
         const parsedSteps = parseWorkflowSteps(workflowInfo);
-        
+
         const newWorkflowData = {
-          name: workflowInfo.workflowName || formData.requirement_name || '智能工作流',
+          name:
+            workflowInfo.workflowName ||
+            formData.requirement_name ||
+            "智能工作流",
           workflowId: workflowInfo.workflowId,
           steps: parsedSteps,
-          rawData: workflowInfo
+          rawData: workflowInfo,
         };
-        
+
         setWorkflowData(newWorkflowData);
-        setMermaidCode(result.data.mermaid_code || '');
+        setMermaidCode(result.data.mermaid_code || "");
         setIsLoading(false);
         setProgress(100);
-        setCurrentStep('工作流创建完成！');
-        
+        setCurrentStep("工作流创建完成！");
+
         // 初始化AI欢迎消息
         initializeWelcomeMessage(parsedSteps.length);
       }
     } catch (error) {
-      console.error('获取工作流数据失败:', error);
-      setCurrentStep('工作流数据获取失败');
+      console.error("获取工作流数据失败:", error);
+      setCurrentStep("工作流数据获取失败");
     }
   };
 
@@ -275,57 +297,57 @@ function Workflow() {
     const visited = new Set();
     const nodeOrder = new Map(); // 用于记录节点的遍历顺序
     let globalStepNumber = 1;
-    
+
     // 广度优先遍历，确保所有节点都被访问
     const traverseAllNodes = () => {
       const queue = [{ nodeId: startNodeId, stepNumber: globalStepNumber }];
-      
+
       while (queue.length > 0) {
         const { nodeId, stepNumber } = queue.shift();
-        
+
         if (!nodeId || visited.has(nodeId) || !nodes[nodeId]) {
           continue;
         }
 
         visited.add(nodeId);
         const node = nodes[nodeId];
-        
+
         // 根据节点类型确定步骤类型和图标
-        let stepType = 'input';
-        let typeText = '输入';
-        
+        let stepType = "input";
+        let typeText = "输入";
+
         switch (node.nodeType) {
-          case 'TRIGGER_USER_INPUT':
-            stepType = 'input';
-            typeText = '输入';
+          case "TRIGGER_USER_INPUT":
+            stepType = "input";
+            typeText = "输入";
             break;
-          case 'ACTION_WEB_SEARCH':
-            stepType = 'search';
-            typeText = '搜索';
+          case "ACTION_WEB_SEARCH":
+            stepType = "search";
+            typeText = "搜索";
             break;
-          case 'ACTION_LLM_TRANSFORM':
-            stepType = 'ai_processing';
-            typeText = 'AI处理';
+          case "ACTION_LLM_TRANSFORM":
+            stepType = "ai_processing";
+            typeText = "AI处理";
             break;
-          case 'CONDITION_BRANCH':
-            stepType = 'validation';
-            typeText = '判断';
+          case "CONDITION_BRANCH":
+            stepType = "validation";
+            typeText = "判断";
             break;
-          case 'LOOP_START':
-            stepType = 'loop';
-            typeText = '循环开始';
+          case "LOOP_START":
+            stepType = "loop";
+            typeText = "循环开始";
             break;
-          case 'LOOP_END':
-            stepType = 'loop';
-            typeText = '循环结束';
+          case "LOOP_END":
+            stepType = "loop";
+            typeText = "循环结束";
             break;
-          case 'OUTPUT_FORMAT':
-            stepType = 'output';
-            typeText = '输出';
+          case "OUTPUT_FORMAT":
+            stepType = "output";
+            typeText = "输出";
             break;
           default:
-            stepType = 'ai_processing';
-            typeText = '处理';
+            stepType = "ai_processing";
+            typeText = "处理";
         }
 
         // 创建步骤对象
@@ -337,7 +359,7 @@ function Workflow() {
           type: stepType,
           typeText: typeText,
           nodeType: node.nodeType,
-          edges: node.edges || []
+          edges: node.edges || [],
         };
 
         steps.push(step);
@@ -346,11 +368,11 @@ function Workflow() {
 
         // 将所有子节点加入队列
         if (node.edges && node.edges.length > 0) {
-          node.edges.forEach(edge => {
+          node.edges.forEach((edge) => {
             if (edge.targetNodeId && !visited.has(edge.targetNodeId)) {
-              queue.push({ 
-                nodeId: edge.targetNodeId, 
-                stepNumber: globalStepNumber
+              queue.push({
+                nodeId: edge.targetNodeId,
+                stepNumber: globalStepNumber,
               });
             }
           });
@@ -360,50 +382,56 @@ function Workflow() {
 
     // 首先执行广度优先遍历，确保所有节点都被访问
     traverseAllNodes();
-    
+
     // 然后基于主流程重新分配步骤编号
     const reassignStepNumbers = () => {
       const mainPath = [];
       const visited = new Set();
-      
+
       // 追踪主路径
       const traceMainPath = (nodeId) => {
         if (!nodeId || visited.has(nodeId) || !nodes[nodeId]) {
           return;
         }
-        
+
         visited.add(nodeId);
         mainPath.push(nodeId);
         const node = nodes[nodeId];
-        
+
         if (node.edges && node.edges.length > 0) {
           // 优先选择主路径
           let nextEdge = null;
-          
-          if (node.nodeType === 'CONDITION_BRANCH') {
+
+          if (node.nodeType === "CONDITION_BRANCH") {
             // 对于条件分支，优先选择 onSuccess 路径
-            nextEdge = node.edges.find(edge => edge.sourceHandle === 'onSuccess') || node.edges[0];
-          } else if (node.nodeType === 'LOOP_END') {
+            nextEdge =
+              node.edges.find((edge) => edge.sourceHandle === "onSuccess") ||
+              node.edges[0];
+          } else if (node.nodeType === "LOOP_END") {
             // 对于循环结束，选择 onComplete 路径
-            nextEdge = node.edges.find(edge => edge.sourceHandle === 'onComplete') || node.edges[0];
+            nextEdge =
+              node.edges.find((edge) => edge.sourceHandle === "onComplete") ||
+              node.edges[0];
           } else {
             // 对于其他节点，选择默认路径
-            nextEdge = node.edges.find(edge => edge.sourceHandle === 'default') || node.edges[0];
+            nextEdge =
+              node.edges.find((edge) => edge.sourceHandle === "default") ||
+              node.edges[0];
           }
-          
+
           if (nextEdge && nextEdge.targetNodeId) {
             traceMainPath(nextEdge.targetNodeId);
           }
         }
       };
-      
+
       traceMainPath(startNodeId);
-      
+
       // 重新分配步骤编号
       let mainPathIndex = 1;
       let sidePathIndex = mainPath.length + 1;
-      
-      steps.forEach(step => {
+
+      steps.forEach((step) => {
         const mainPathPosition = mainPath.indexOf(step.id);
         if (mainPathPosition !== -1) {
           step.stepNumber = mainPathPosition + 1;
@@ -414,10 +442,10 @@ function Workflow() {
         }
       });
     };
-    
+
     // 重新分配步骤编号
     reassignStepNumbers();
-    
+
     // 按步骤编号排序
     return steps.sort((a, b) => a.stepNumber - b.stepNumber);
   }, []);
@@ -425,25 +453,25 @@ function Workflow() {
   // 修改工作流创建过程，改为轮询蓝图状态
   useEffect(() => {
     if (!blueprintId) {
-      console.error('缺少蓝图ID');
+      console.error("缺少蓝图ID");
       setIsLoading(false);
       return;
     }
 
     // 开始轮询蓝图状态
     const startPolling = () => {
-      setCurrentStep('正在生成工作流蓝图...');
+      setCurrentStep("正在生成工作流蓝图...");
       setProgress(20);
-      
+
       // 立即执行一次
       pollBlueprintStatus();
-      
+
       // 设置定时轮询，每3秒查询一次
       pollingRef.current = setInterval(() => {
         pollBlueprintStatus();
-        
+
         // 模拟进度增长
-        setProgress(prev => {
+        setProgress((prev) => {
           if (prev < 80) {
             return prev + Math.random() * 10;
           }
@@ -478,14 +506,24 @@ function Workflow() {
         <div className="workflow-page-container">
           <Card className="workflow-loading-card">
             <div className="workflow-error-content">
-              <Title heading={2} style={{ textAlign: 'center', color: '#1a202c' }}>
+              <Title
+                heading={2}
+                style={{ textAlign: "center", color: "#1a202c" }}
+              >
                 数据加载失败
               </Title>
-              <Text style={{ textAlign: 'center', fontSize: '16px', color: '#666', marginBottom: '24px' }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: "16px",
+                  color: "#666",
+                  marginBottom: "24px",
+                }}
+              >
                 无法获取工作流数据，请返回重试
               </Text>
-              <div style={{ textAlign: 'center' }}>
-                <Button onClick={() => navigate('/')} type="primary">
+              <div style={{ textAlign: "center" }}>
+                <Button onClick={() => navigate("/")} type="primary">
                   返回首页
                 </Button>
               </div>
@@ -502,26 +540,31 @@ function Workflow() {
       <Content className="workflow-page-content">
         <div className="workflow-page-container">
           <div className="workflow-page-header">
-            <Button 
-              icon={<IconArrowLeft />} 
+            <Button
+              icon={<IconArrowLeft />}
               theme="borderless"
-              onClick={() => navigate('/requirement-form', { 
-                state: { 
-                  threadId, 
-                  requirementData: formData,
-                  userInput 
-                } 
-              })}
+              onClick={() =>
+                navigate("/requirement-form", {
+                  state: {
+                    threadId,
+                    requirementData: formData,
+                    userInput,
+                  },
+                })
+              }
               className="workflow-back-button"
             >
               返回需求确认
             </Button>
-            
+
             <div className="workflow-header-info">
-              <Title heading={2} style={{ margin: 0, color: '#1a202c' }}>
+              <Title heading={2} style={{ margin: 0, color: "#1a202c" }}>
                 正在创建工作流
               </Title>
-              <Text type="secondary" style={{ marginTop: '8px', display: 'block' }}>
+              <Text
+                type="secondary"
+                style={{ marginTop: "8px", display: "block" }}
+              >
                 基于您的需求，我们正在为您构建智能工作流
               </Text>
             </div>
@@ -532,42 +575,64 @@ function Workflow() {
               <div className="workflow-loading-animation">
                 <Spin size="large" />
               </div>
-              
+
               <div className="workflow-progress-section">
-                <Title heading={3} style={{ textAlign: 'center', margin: '32px 0 24px', color: '#1a202c' }}>
+                <Title
+                  heading={3}
+                  style={{
+                    textAlign: "center",
+                    margin: "32px 0 24px",
+                    color: "#1a202c",
+                  }}
+                >
                   正在创建工作流蓝图
                 </Title>
-                
+
                 <div className="workflow-progress-container">
-                  <Progress 
-                    percent={progress} 
+                  <Progress
+                    percent={progress}
                     showInfo={true}
                     stroke="#374151"
                     size="large"
-                    style={{ marginBottom: '16px' }}
+                    style={{ marginBottom: "16px" }}
                   />
-                  <Text style={{ 
-                    textAlign: 'center', 
-                    fontSize: '16px', 
-                    color: '#666',
-                    display: 'block',
-                    minHeight: '24px'
-                  }}>
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      fontSize: "16px",
+                      color: "#666",
+                      display: "block",
+                      minHeight: "24px",
+                    }}
+                  >
                     {currentStep}
                   </Text>
-                  
+
                   {/* 显示蓝图状态 */}
-                  <div style={{ textAlign: 'center', marginTop: '12px' }}>
-                    <Text style={{ fontSize: '14px', color: '#888' }}>
-                      蓝图状态: {blueprintStatus === 'pending' ? '处理中' : blueprintStatus === 'completed' ? '已完成' : blueprintStatus || '未知'}
+                  <div style={{ textAlign: "center", marginTop: "12px" }}>
+                    <Text style={{ fontSize: "14px", color: "#888" }}>
+                      蓝图状态:{" "}
+                      {blueprintStatus === "pending"
+                        ? "处理中"
+                        : blueprintStatus === "completed"
+                          ? "已完成"
+                          : blueprintStatus || "未知"}
                     </Text>
                   </div>
                 </div>
               </div>
 
               <div className="workflow-requirement-summary">
-                <Text type="secondary" style={{ fontSize: '14px', textAlign: 'center', display: 'block' }}>
-                  正在为 "{formData.requirement_name || '您的需求'}" 创建智能工作流
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: "14px",
+                    textAlign: "center",
+                    display: "block",
+                  }}
+                >
+                  正在为 "{formData.requirement_name || "您的需求"}"
+                  创建智能工作流
                 </Text>
               </div>
             </div>
@@ -582,33 +647,35 @@ function Workflow() {
     <Content className="workflow-page-content">
       <div className="workflow-page-container">
         <div className="workflow-page-header">
-          <Button 
-            icon={<IconArrowLeft />} 
+          <Button
+            icon={<IconArrowLeft />}
             theme="borderless"
-            onClick={() => navigate('/requirement-form', { 
-              state: { 
-                threadId, 
-                requirementData: formData,
-                userInput 
-              } 
-            })}
+            onClick={() =>
+              navigate("/requirement-form", {
+                state: {
+                  threadId,
+                  requirementData: formData,
+                  userInput,
+                },
+              })
+            }
             className="workflow-back-button"
           >
             返回需求确认
           </Button>
-          
+
           <div className="workflow-header-info">
-            <Title heading={2} style={{ margin: 0, color: '#1a202c' }}>
+            <Title heading={2} style={{ margin: 0, color: "#1a202c" }}>
               工作流预览
             </Title>
           </div>
 
           <div className="workflow-header-actions">
-            <Button 
+            <Button
               type="primary"
               // size="large"
               onClick={() => {
-                console.log('开始使用工作流', workflowData);
+                console.log("开始使用工作流", workflowData);
                 // 这里可以添加确定使用工作流的逻辑
               }}
               className="workflow-use-button"
@@ -622,18 +689,21 @@ function Workflow() {
           {/* 左侧：工作流信息和流程图 */}
           <Card className="workflow-left-panel">
             <div className="workflow-info">
-              <Title heading={3} style={{ color: '#1a202c' }}>
+              <Title heading={3} style={{ color: "#1a202c" }}>
                 {workflowData?.name}
               </Title>
             </div>
 
             <Tabs type="line">
-              <TabPane tab={
-                <span>
-                  <IconCode style={{ marginRight: '8px' }} />
-                  工作流步骤
-                </span>
-              } itemKey="steps">
+              <TabPane
+                tab={
+                  <span>
+                    <IconCode style={{ marginRight: "8px" }} />
+                    工作流步骤
+                  </span>
+                }
+                itemKey="steps"
+              >
                 <div className="workflow-steps">
                   <div className="workflow-steps-container">
                     {workflowData?.steps?.map((step, index) => (
@@ -642,50 +712,71 @@ function Workflow() {
                           {step.stepNumber}
                         </div>
                         <div className="workflow-step-content">
-                          <Title heading={5} style={{ margin: '0 0 4px 0', color: '#1a202c' }}>
+                          <Title
+                            heading={5}
+                            style={{ margin: "0 0 4px 0", color: "#1a202c" }}
+                          >
                             {step.name}
                           </Title>
-                          <Text type="secondary" style={{ fontSize: '13px', marginBottom: '8px' }}>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: "13px", marginBottom: "8px" }}
+                          >
                             {step.description}
                           </Text>
-                          
+
                           {/* 显示节点类型和可能的分支 */}
                           <div className="workflow-step-details">
-                            <div className={`workflow-step-type-badge ${step.type}`}>
+                            <div
+                              className={`workflow-step-type-badge ${step.type}`}
+                            >
                               {step.typeText}
                             </div>
-                            
+
                             {/* 显示是否为主路径 */}
                             {step.isMainPath === false && (
-                              <div className="workflow-branch-badge">
-                                分支
-                              </div>
+                              <div className="workflow-branch-badge">分支</div>
                             )}
-                            
+
                             {/* 如果是条件分支，显示分支信息 */}
-                            {step.nodeType === 'CONDITION_BRANCH' && step.edges.length > 1 && (
-                              <div style={{ fontSize: '11px', color: '#666' }}>
-                                分支: {step.edges.map(edge => edge.sourceHandle).join(' / ')}
-                              </div>
-                            )}
-                            
+                            {step.nodeType === "CONDITION_BRANCH" &&
+                              step.edges.length > 1 && (
+                                <div
+                                  style={{ fontSize: "11px", color: "#666" }}
+                                >
+                                  分支:{" "}
+                                  {step.edges
+                                    .map((edge) => edge.sourceHandle)
+                                    .join(" / ")}
+                                </div>
+                              )}
+
                             {/* 如果有循环，显示循环标识 */}
-                            {step.edges.some(edge => 
-                              workflowData.steps.some(s => s.id === edge.targetNodeId && s.stepNumber <= step.stepNumber)
+                            {step.edges.some((edge) =>
+                              workflowData.steps.some(
+                                (s) =>
+                                  s.id === edge.targetNodeId &&
+                                  s.stepNumber <= step.stepNumber,
+                              ),
                             ) && (
-                              <div className="workflow-loop-badge">
-                                循环
-                              </div>
+                              <div className="workflow-loop-badge">循环</div>
                             )}
                           </div>
-                          
+
                           {/* 显示连接的下一步节点 */}
                           {step.edges.length > 0 && (
                             <div className="workflow-next-step-info">
-                              下一步: {step.edges.map(edge => {
-                                const nextStep = workflowData.steps.find(s => s.id === edge.targetNodeId);
-                                return nextStep ? `${nextStep.name}(${edge.sourceHandle})` : edge.targetNodeId;
-                              }).join(', ')}
+                              下一步:{" "}
+                              {step.edges
+                                .map((edge) => {
+                                  const nextStep = workflowData.steps.find(
+                                    (s) => s.id === edge.targetNodeId,
+                                  );
+                                  return nextStep
+                                    ? `${nextStep.name}(${edge.sourceHandle})`
+                                    : edge.targetNodeId;
+                                })
+                                .join(", ")}
                             </div>
                           )}
                         </div>
@@ -694,17 +785,26 @@ function Workflow() {
                   </div>
 
                   <div className="workflow-stats-summary">
-                    <Text type="secondary" style={{ fontSize: '14px' }}>
+                    <Text type="secondary" style={{ fontSize: "14px" }}>
                       工作流统计: 共 {workflowData?.steps?.length || 0} 个步骤
                       {(() => {
-                        const branchCount = workflowData?.steps?.filter(s => s.nodeType === 'CONDITION_BRANCH').length || 0;
-                        const hasLoop = workflowData?.steps?.some(s => s.edges.some(edge => 
-                          workflowData.steps.some(target => target.id === edge.targetNodeId && target.stepNumber <= s.stepNumber)
-                        ));
+                        const branchCount =
+                          workflowData?.steps?.filter(
+                            (s) => s.nodeType === "CONDITION_BRANCH",
+                          ).length || 0;
+                        const hasLoop = workflowData?.steps?.some((s) =>
+                          s.edges.some((edge) =>
+                            workflowData.steps.some(
+                              (target) =>
+                                target.id === edge.targetNodeId &&
+                                target.stepNumber <= s.stepNumber,
+                            ),
+                          ),
+                        );
                         return (
                           <>
                             {branchCount > 0 && ` • ${branchCount} 个判断分支`}
-                            {hasLoop && ' • 包含循环逻辑'}
+                            {hasLoop && " • 包含循环逻辑"}
                           </>
                         );
                       })()}
@@ -712,18 +812,27 @@ function Workflow() {
                   </div>
                 </div>
               </TabPane>
-              
-              <TabPane tab={
-                <span>
-                  <IconBranch style={{ marginRight: '8px' }} />
-                  流程图
-                </span>
-              } itemKey="diagram">
+
+              <TabPane
+                tab={
+                  <span>
+                    <IconBranch style={{ marginRight: "8px" }} />
+                    流程图
+                  </span>
+                }
+                itemKey="diagram"
+              >
                 <div className="workflow-mermaid-container">
                   {mermaidCode ? (
                     <DynamicFlowchart code={mermaidCode} />
                   ) : (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "40px",
+                        color: "#666",
+                      }}
+                    >
                       <Text>流程图正在生成中...</Text>
                     </div>
                   )}
@@ -735,11 +844,11 @@ function Workflow() {
           {/* 右侧：AI助手聊天界面 */}
           <div className="workflow-right-panel">
             <div className="workflow-chat-header">
-              <Title heading={4} style={{ margin: 0, color: '#1a202c' }}>
+              <Title heading={4} style={{ margin: 0, color: "#1a202c" }}>
                 AI工作流助手
               </Title>
             </div>
-            
+
             <Chat
               chats={messages}
               onChatsChange={handleChatsChange}
@@ -752,24 +861,24 @@ function Workflow() {
                   currentSSEController.current = null;
                 }
                 setIsAiTyping(false);
-                console.log('停止生成');
+                console.log("停止生成");
               }}
               roleConfig={{
                 user: {
-                  name: '用户',
-                  avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg'
+                  name: "用户",
+                  avatar:
+                    "https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/root-web-sites/avatarDemo.jpeg",
                 },
                 assistant: {
-                  name: 'Agentify AI',
-                  avatar: '/logo.png'
-                }
+                  name: "Agentify AI",
+                  avatar: "/logo.png",
+                },
               }}
               placeholder="输入您的问题或修改建议..."
               mode="bubble"
               align="leftRight"
               enableUpload={false}
             />
-          
           </div>
         </div>
       </div>

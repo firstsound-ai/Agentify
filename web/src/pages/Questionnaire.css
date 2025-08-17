@@ -151,7 +151,6 @@
   justify-content: center;
 }
 
-
 .custom-option {
   flex-direction: column;
   align-items: flex-start !important;
@@ -199,7 +198,8 @@
   color: #64748b !important;
 }
 
-.question-navigation .semi-button:not(.semi-button-primary):not(:first-child):hover {
+.question-navigation
+  .semi-button:not(.semi-button-primary):not(:first-child):hover {
   background: #f1f5f9 !important;
   border-color: #cbd5e0 !important;
   color: #475569 !important;
@@ -209,20 +209,20 @@
   .questionnaire-content {
     padding: 20px 16px;
   }
-  
+
   .question-card {
     padding: 24px 20px;
   }
-  
+
   .completion-card {
     padding: 40px 24px;
   }
-  
+
   .question-navigation {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .question-navigation button {
     width: 100%;
   }

@@ -23,6 +23,7 @@ class RequirementTaskResponse(BaseModel):
     error: Optional[str] = None
     progress: str
 
+
 class RequirementFields(BaseModel):
     """需求可编辑字段模型 - 可用于请求和响应"""
 

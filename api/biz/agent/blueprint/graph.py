@@ -1,9 +1,6 @@
 from langgraph.graph import END, StateGraph
 
-from biz.agent.blueprint.node import (
-    generate_workflow_node,
-    generate_mermaid_node
-)
+from biz.agent.blueprint.node import generate_workflow_node, generate_mermaid_node
 
 from biz.agent.blueprint.state import GraphState
 from dal.checkpointer import get_checkpointer

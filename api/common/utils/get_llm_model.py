@@ -11,14 +11,10 @@ def get_llm_model(
     model_name: Optional[str] = None,
     model_kwargs: Optional[dict] = None,
 ) -> ChatOpenAI:
-    # 合并基础配置
-    base_kwargs = {
-        "base_url": settings.OPENAI_API_BASE,
-        "api_key": SecretStr(settings.OPENAI_API_KEY),
-    }
-    merged_kwargs = {**base_kwargs, **(model_kwargs or {})}
     return ChatOpenAI(
+        base_url=settings.OPENAI_API_BASE,
+        api_key=SecretStr(settings.OPENAI_API_KEY),
         model=model_name if model_name else settings.DEFAULT_MODEL,
         temperature=temperature,
-        model_kwargs=merged_kwargs or {},
+        model_kwargs=model_kwargs or {},
     )
