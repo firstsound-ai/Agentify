@@ -2,9 +2,9 @@ from langchain_core.prompts import ChatPromptTemplate
 
 WORKFLOW_PROMPT = ChatPromptTemplate.from_messages(
     [
-      (
-        "system",
-        """
+        (
+            "system",
+            """
 # 角色：AI工作流设计师
 
 你是一位经验丰富的AI工作流设计师，擅长将产品经理给出的文档转换成一份完整的工作流。
@@ -123,20 +123,17 @@ xxx代指编号（如001,002，003）
     }}
   }}
 }}
-"""
-    ),
-    (
-      "user",
-      "ORIGINAL_DOCUMENT:\n{final_document}"
-    )
-  ]
+""",
+        ),
+        ("user", "ORIGINAL_DOCUMENT:\n{final_document}"),
+    ]
 )
 
 MERMAID_PROMPT = ChatPromptTemplate.from_messages(
-  [
-    (
-        "system",
-        """
+    [
+        (
+            "system",
+            """
 # 角色：AI Mermaid流程图专家
 
 你是一位经验丰富的AI Mermaid流程图专家，擅长将JSON格式的workflow工作流转换成一个Mermaid代码。
@@ -176,21 +173,18 @@ graph TD
     node008 -->|default| node009
     node009 -->|onSuccess| node007
     node009 -->|onFailure| nodeFinal
-"""
-    ),
-    (
-        "user",
-        "WORKFLOW: \n{workflow}"
-    )
-  ]
+""",
+        ),
+        ("user", "WORKFLOW: \n{workflow}"),
+    ]
 )
 
 
 WORKFLOW_REFINE_PROMPT = ChatPromptTemplate.from_messages(
-  [
-    (
-        "system",
-        """
+    [
+        (
+            "system",
+            """
 # 角色：AI工作流设计师
 
 你是一位经验丰富的AI工作流设计师，擅长根据用户最新需求修改workflow，生成新的JSON格式的工作流。
@@ -232,19 +226,20 @@ xxx代指编号（如001,002，003）
 # 输出格式
 
 你的全部回答**必须**是一个单一、有效的JSON对象，并用 ```json ... ``` 代码块包裹。**严禁**在JSON代码块前后包含任何文本、解释或Markdown格式。
-"""
-    ),
-    (
-        "user",
-        "OLD_WORKFLOW: \n{workflow} REFINE_REQUIREMENT: \n{refine_requirement}"
-    )
-  ]
+""",
+        ),
+        (
+            "user",
+            "OLD_WORKFLOW: \n{workflow} REFINE_REQUIREMENT: \n{refine_requirement}",
+        ),
+    ]
 )
 
 CHAT_PROMPT = ChatPromptTemplate.from_messages(
-    [(
-        "system",
-        """
+    [
+        (
+            "system",
+            """
 角色：AI 工作流沟通师
 
 你是一位善于捕捉用户需求的工作流沟通师，擅长根据最新的用户对话，给出合适的回复。
@@ -263,12 +258,11 @@ CHAT_PROMPT = ChatPromptTemplate.from_messages(
 1. 好的，根据您的需求，需要增加一个条件分支，我将立马更新蓝图，请问还有别的问题吗？
 
 2. 关于节点3，这个步骤是检查公司是否盈利的，分成两个条件分支。
-"""),
-    (
-        "user", 
-        "WORKFLOW:\n{workflow} MESSAGES:\n{messages}"
-    )
-])
+""",
+        ),
+        ("user", "WORKFLOW:\n{workflow} MESSAGES:\n{messages}"),
+    ]
+)
 
 
 DECISION_PROMPT = ChatPromptTemplate.from_messages(
@@ -278,11 +272,8 @@ DECISION_PROMPT = ChatPromptTemplate.from_messages(
             """你负责判断用户的最新对话内容（MESSAGES）是否和修改工作流有关。若是，返回'update', 若否，返回'end'。仅返回update或end，不允许输出其他任何内容。
             
             只有用户明确说了要修改，并且提到修改指令，才返回update。反之，均为end。
-            """
+            """,
         ),
-        (
-            "user", 
-            "MESSAGES:\n{messages}"
-        )
+        ("user", "MESSAGES:\n{messages}"),
     ]
 )

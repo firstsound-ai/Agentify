@@ -1,160 +1,160 @@
 {
-    "id": "1755256781173",
-    "type": "custom",
-    "data": {
-        "type": "tool",
-        "title": "网页爬虫",
-        "desc": "",
-        "tool_parameters": {
-            "url": {
-                "type": "mixed",
-                "value": ""
-            }
+  "id": "1755256781173",
+  "type": "custom",
+  "data": {
+    "type": "tool",
+    "title": "网页爬虫",
+    "desc": "",
+    "tool_parameters": {
+      "url": {
+        "type": "mixed",
+        "value": ""
+      }
+    },
+    "tool_configurations": {
+      "user_agent": {
+        "type": "mixed",
+        "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36"
+      },
+      "generate_summary": {
+        "type": "constant",
+        "value": false
+      }
+    },
+    "tool_node_version": "2",
+    "provider_id": "webscraper",
+    "provider_type": "builtin",
+    "provider_name": "webscraper",
+    "tool_name": "webscraper",
+    "tool_label": "网页爬虫",
+    "tool_description": "一个用于爬取网页的工具。",
+    "is_team_authorization": true,
+    "output_schema": null,
+    "paramSchemas": [
+      {
+        "name": "url",
+        "label": {
+          "en_US": "URL",
+          "zh_Hans": "网页链接",
+          "pt_BR": "URL",
+          "ja_JP": "URL"
         },
-        "tool_configurations": {
-            "user_agent": {
-                "type": "mixed",
-                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36"
-            },
-            "generate_summary": {
-                "type": "constant",
-                "value": false
-            }
+        "placeholder": null,
+        "scope": null,
+        "auto_generate": null,
+        "template": null,
+        "required": true,
+        "default": null,
+        "min": null,
+        "max": null,
+        "precision": null,
+        "options": [],
+        "type": "string",
+        "human_description": {
+          "en_US": "used for linking to webpages",
+          "zh_Hans": "用于链接到网页",
+          "pt_BR": "used for linking to webpages",
+          "ja_JP": "used for linking to webpages"
         },
-        "tool_node_version": "2",
-        "provider_id": "webscraper",
-        "provider_type": "builtin",
-        "provider_name": "webscraper",
-        "tool_name": "webscraper",
-        "tool_label": "网页爬虫",
-        "tool_description": "一个用于爬取网页的工具。",
-        "is_team_authorization": true,
-        "output_schema": null,
-        "paramSchemas": [
-            {
-                "name": "url",
-                "label": {
-                    "en_US": "URL",
-                    "zh_Hans": "网页链接",
-                    "pt_BR": "URL",
-                    "ja_JP": "URL"
-                },
-                "placeholder": null,
-                "scope": null,
-                "auto_generate": null,
-                "template": null,
-                "required": true,
-                "default": null,
-                "min": null,
-                "max": null,
-                "precision": null,
-                "options": [],
-                "type": "string",
-                "human_description": {
-                    "en_US": "used for linking to webpages",
-                    "zh_Hans": "用于链接到网页",
-                    "pt_BR": "used for linking to webpages",
-                    "ja_JP": "used for linking to webpages"
-                },
-                "form": "llm",
-                "llm_description": "url for scraping"
+        "form": "llm",
+        "llm_description": "url for scraping"
+      },
+      {
+        "name": "user_agent",
+        "label": {
+          "en_US": "User Agent",
+          "zh_Hans": "User Agent",
+          "pt_BR": "User Agent",
+          "ja_JP": "User Agent"
+        },
+        "placeholder": null,
+        "scope": null,
+        "auto_generate": null,
+        "template": null,
+        "required": false,
+        "default": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36",
+        "min": null,
+        "max": null,
+        "precision": null,
+        "options": [],
+        "type": "string",
+        "human_description": {
+          "en_US": "used for identifying the browser.",
+          "zh_Hans": "用于识别浏览器。",
+          "pt_BR": "used for identifying the browser.",
+          "ja_JP": "used for identifying the browser."
+        },
+        "form": "form",
+        "llm_description": null
+      },
+      {
+        "name": "generate_summary",
+        "label": {
+          "en_US": "Whether to generate summary",
+          "zh_Hans": "是否生成摘要",
+          "pt_BR": "Whether to generate summary",
+          "ja_JP": "Whether to generate summary"
+        },
+        "placeholder": null,
+        "scope": null,
+        "auto_generate": null,
+        "template": null,
+        "required": false,
+        "default": "false",
+        "min": null,
+        "max": null,
+        "precision": null,
+        "options": [
+          {
+            "value": "true",
+            "label": {
+              "en_US": "Yes",
+              "zh_Hans": "是",
+              "pt_BR": "Yes",
+              "ja_JP": "Yes"
             },
-            {
-                "name": "user_agent",
-                "label": {
-                    "en_US": "User Agent",
-                    "zh_Hans": "User Agent",
-                    "pt_BR": "User Agent",
-                    "ja_JP": "User Agent"
-                },
-                "placeholder": null,
-                "scope": null,
-                "auto_generate": null,
-                "template": null,
-                "required": false,
-                "default": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.1000.0 Safari/537.36",
-                "min": null,
-                "max": null,
-                "precision": null,
-                "options": [],
-                "type": "string",
-                "human_description": {
-                    "en_US": "used for identifying the browser.",
-                    "zh_Hans": "用于识别浏览器。",
-                    "pt_BR": "used for identifying the browser.",
-                    "ja_JP": "used for identifying the browser."
-                },
-                "form": "form",
-                "llm_description": null
+            "icon": null
+          },
+          {
+            "value": "false",
+            "label": {
+              "en_US": "No",
+              "zh_Hans": "否",
+              "pt_BR": "No",
+              "ja_JP": "No"
             },
-            {
-                "name": "generate_summary",
-                "label": {
-                    "en_US": "Whether to generate summary",
-                    "zh_Hans": "是否生成摘要",
-                    "pt_BR": "Whether to generate summary",
-                    "ja_JP": "Whether to generate summary"
-                },
-                "placeholder": null,
-                "scope": null,
-                "auto_generate": null,
-                "template": null,
-                "required": false,
-                "default": "false",
-                "min": null,
-                "max": null,
-                "precision": null,
-                "options": [
-                    {
-                        "value": "true",
-                        "label": {
-                            "en_US": "Yes",
-                            "zh_Hans": "是",
-                            "pt_BR": "Yes",
-                            "ja_JP": "Yes"
-                        },
-                        "icon": null
-                    },
-                    {
-                        "value": "false",
-                        "label": {
-                            "en_US": "No",
-                            "zh_Hans": "否",
-                            "pt_BR": "No",
-                            "ja_JP": "No"
-                        },
-                        "icon": null
-                    }
-                ],
-                "type": "boolean",
-                "human_description": {
-                    "en_US": "If true, the crawler will only return the page summary content.",
-                    "zh_Hans": "如果启用，爬虫将仅返回页面摘要内容。",
-                    "pt_BR": "If true, the crawler will only return the page summary content.",
-                    "ja_JP": "If true, the crawler will only return the page summary content."
-                },
-                "form": "form",
-                "llm_description": null
-            }
+            "icon": null
+          }
         ],
-        "params": {
-            "url": "",
-            "user_agent": "",
-            "generate_summary": ""
+        "type": "boolean",
+        "human_description": {
+          "en_US": "If true, the crawler will only return the page summary content.",
+          "zh_Hans": "如果启用，爬虫将仅返回页面摘要内容。",
+          "pt_BR": "If true, the crawler will only return the page summary content.",
+          "ja_JP": "If true, the crawler will only return the page summary content."
         },
-        "selected": true
+        "form": "form",
+        "llm_description": null
+      }
+    ],
+    "params": {
+      "url": "",
+      "user_agent": "",
+      "generate_summary": ""
     },
-    "position": {
-        "x": 364.842874864002,
-        "y": 100
-    },
-    "targetPosition": "left",
-    "sourcePosition": "right",
-    "positionAbsolute": {
-        "x": 364.842874864002,
-        "y": 100
-    },
-    "width": 244,
-    "height": 116,
     "selected": true
+  },
+  "position": {
+    "x": 364.842874864002,
+    "y": 100
+  },
+  "targetPosition": "left",
+  "sourcePosition": "right",
+  "positionAbsolute": {
+    "x": 364.842874864002,
+    "y": 100
+  },
+  "width": 244,
+  "height": 116,
+  "selected": true
 }

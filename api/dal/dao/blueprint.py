@@ -4,15 +4,13 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from common.dto.blueprint import TaskStatus
-from common.dto.blueprint import BlueprintResponse
 from common.dto.user import UserInfo
 from dal.po.blueprint import Blueprint
 
+
 class BlueprintDAO:
     @staticmethod
-    def create_blueprint(
-        db: Session, thread_id: str, user_info: UserInfo
-    ) -> str:
+    def create_blueprint(db: Session, thread_id: str, user_info: UserInfo) -> str:
         blueprint_id = str(uuid4())
         new_blueprint = Blueprint(
             id=blueprint_id,
@@ -21,11 +19,11 @@ class BlueprintDAO:
             user_id=user_info.id,
             status=TaskStatus.PENDING.value,
             progress="等待处理中...",
-            is_current=True
+            is_current=True,
         )
         db.add(new_blueprint)
         return blueprint_id
-    
+
     @staticmethod
     def update_blueprint_status(
         db: Session,
@@ -49,15 +47,20 @@ class BlueprintDAO:
                 setattr(blueprint, "error_message", error_message)
             return blueprint
         return None
-    
+
     @staticmethod
     def save_new_blueprint(
-            db: Session,
-            thread_id: str,
-            workflow: Optional[dict],
-            mermaid_code: Optional[str]
-        ):
-        latest_blueprint = db.query(Blueprint).filter(Blueprint.thread_id == thread_id).order_by(Blueprint.created_at.desc()).first()
+        db: Session,
+        thread_id: str,
+        workflow: Optional[dict],
+        mermaid_code: Optional[str],
+    ):
+        latest_blueprint = (
+            db.query(Blueprint)
+            .filter(Blueprint.thread_id == thread_id)
+            .order_by(Blueprint.created_at.desc())
+            .first()
+        )
 
         if latest_blueprint:
             latest_blueprint.is_current = False
@@ -72,7 +75,7 @@ class BlueprintDAO:
             workflow=workflow,
             mermaid_code=mermaid_code,
             progress="工作流和流程图均已生成",
-            is_current=True
+            is_current=True,
         )
         db.add(new_blueprint)
 
@@ -80,10 +83,15 @@ class BlueprintDAO:
     def get_blueprint_list(db: Session, thread_id: str):
         blueprints = db.query(Blueprint).filter(Blueprint.thread_id == thread_id).all()
         return blueprints
-    
+
     @staticmethod
     def get_lastest_blueprint(db: Session, thread_id: str):
-        latest_blueprint = db.query(Blueprint).filter(Blueprint.thread_id == thread_id).order_by(Blueprint.created_at.desc()).first()
+        latest_blueprint = (
+            db.query(Blueprint)
+            .filter(Blueprint.thread_id == thread_id)
+            .order_by(Blueprint.created_at.desc())
+            .first()
+        )
         return latest_blueprint
 
     @staticmethod

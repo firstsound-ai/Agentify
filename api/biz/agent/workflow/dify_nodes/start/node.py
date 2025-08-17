@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from ..base import BaseNodeData, NodeVariable, OutputVariable
+from ..base import BaseNodeData, NodeVariable
 
 
 @dataclass

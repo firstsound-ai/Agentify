@@ -2,7 +2,13 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   padding: 12px 10px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    sans-serif;
 }
 
 .requirement-form-container {
@@ -196,16 +202,16 @@
     text-align: center;
     gap: 20px;
   }
-  
+
   .header-info {
     order: 1;
   }
-  
+
   .header-button {
     order: 0;
     align-self: flex-start;
   }
-  
+
   .header-actions {
     order: 2;
   }
@@ -215,28 +221,28 @@
   .requirement-form-content {
     padding: 20px 16px;
   }
-  
+
   .requirement-form-card {
     padding: 24px 20px !important;
   }
-  
+
   .form-content {
     gap: 24px;
   }
-  
+
   .form-field {
     padding-bottom: 20px;
   }
-  
+
   .field-display {
     padding: 12px 16px;
     min-height: 50px;
   }
-  
+
   .form-actions {
     width: 100%;
   }
-  
+
   .confirm-button {
     width: 100% !important;
   }
@@ -262,10 +268,24 @@
   animation: slideInUp 0.4s ease-out;
 }
 
-.form-field:nth-child(1) { animation-delay: 0.1s; }
-.form-field:nth-child(2) { animation-delay: 0.2s; }
-.form-field:nth-child(3) { animation-delay: 0.3s; }
-.form-field:nth-child(4) { animation-delay: 0.4s; }
-.form-field:nth-child(5) { animation-delay: 0.5s; }
-.form-field:nth-child(6) { animation-delay: 0.6s; }
-.form-field:nth-child(7) { animation-delay: 0.7s; }
+.form-field:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.form-field:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.form-field:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.form-field:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.form-field:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.form-field:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.form-field:nth-child(7) {
+  animation-delay: 0.7s;
+}

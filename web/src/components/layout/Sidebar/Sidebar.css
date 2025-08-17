@@ -1,13 +1,13 @@
 .floating-sidebar-container {
   position: fixed;
   top: 50%;
-  left: 32px; 
-  transform: translateY(-50%); 
+  left: 32px;
+  transform: translateY(-50%);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 48px; 
+  width: 48px;
 }
 
 .plus-button-wrapper {
@@ -20,15 +20,16 @@
 .nav-pill-wrapper {
   background-color: #ffffff;
   border-radius: 32px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .nav-pill-wrapper .semi-navigation-item-selected {
-  background-color: #e8e8e8; 
+  background-color: #e8e8e8;
   border-radius: 50% !important;
 }
 
-.nav-pill-wrapper .semi-navigation-item:hover:not(.semi-navigation-item-selected) {
+.nav-pill-wrapper
+  .semi-navigation-item:hover:not(.semi-navigation-item-selected) {
   border-radius: 50% !important;
 }

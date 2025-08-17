@@ -1,9 +1,18 @@
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Button, Typography, Card, Input, TextArea, Toast, Space } from '@douyinfe/semi-ui';
-import { IconArrowLeft, IconSave, IconEdit } from '@douyinfe/semi-icons';
-import request from '../utils/request';
-import './RequirementForm.css';
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Layout,
+  Button,
+  Typography,
+  Card,
+  Input,
+  TextArea,
+  Toast,
+  Space,
+} from "@douyinfe/semi-ui";
+import { IconArrowLeft, IconSave, IconEdit } from "@douyinfe/semi-icons";
+import request from "../utils/request";
+import "./RequirementForm.css";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -11,20 +20,21 @@ const { Title, Text } = Typography;
 function RequirementForm() {
   const navigate = useNavigate();
   const location = useLocation();
-  const threadId = location.state?.threadId || '';
+  const threadId = location.state?.threadId || "";
   const requirementData = location.state?.requirementData || null;
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [formData, setFormData] = useState({
-    requirement_name: requirementData?.requirement_name || '',
-    mission_statement: requirementData?.mission_statement || '',
-    user_and_scenario: requirementData?.user_and_scenario || '',
-    user_input: requirementData?.user_input || '',
-    ai_output: requirementData?.ai_output || '',
-    success_criteria: requirementData?.success_criteria || '',
-    boundaries_and_limitations: requirementData?.boundaries_and_limitations || ''
+    requirement_name: requirementData?.requirement_name || "",
+    mission_statement: requirementData?.mission_statement || "",
+    user_and_scenario: requirementData?.user_and_scenario || "",
+    user_input: requirementData?.user_input || "",
+    ai_output: requirementData?.ai_output || "",
+    success_criteria: requirementData?.success_criteria || "",
+    boundaries_and_limitations:
+      requirementData?.boundaries_and_limitations || "",
   });
 
   if (!requirementData) {
@@ -33,14 +43,24 @@ function RequirementForm() {
         <div className="requirement-form-container">
           <Card className="requirement-form-card">
             <div className="error-content">
-              <Title heading={2} style={{ textAlign: 'center', color: '#1a202c' }}>
+              <Title
+                heading={2}
+                style={{ textAlign: "center", color: "#1a202c" }}
+              >
                 数据加载失败
               </Title>
-              <Text style={{ textAlign: 'center', fontSize: '16px', color: '#666', marginBottom: '24px' }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: "16px",
+                  color: "#666",
+                  marginBottom: "24px",
+                }}
+              >
                 无法获取需求数据，请返回重试
               </Text>
-              <div style={{ textAlign: 'center' }}>
-                <Button onClick={() => navigate('/')} type="primary">
+              <div style={{ textAlign: "center" }}>
+                <Button onClick={() => navigate("/")} type="primary">
                   返回首页
                 </Button>
               </div>
@@ -54,23 +74,26 @@ function RequirementForm() {
   const handleInputChange = (field, value) => {
     setFormData({
       ...formData,
-      [field]: value
+      [field]: value,
     });
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-    
+
     try {
-      const result = await request.post(`/api/requirement/fields/${threadId}`, formData);
-      
+      const result = await request.post(
+        `/api/requirement/fields/${threadId}`,
+        formData,
+      );
+
       if (result.code === 0) {
         setIsEditing(false);
       } else {
-        throw new Error(result.message || '保存失败');
+        throw new Error(result.message || "保存失败");
       }
     } catch (error) {
-      console.error('保存失败:', error);
+      console.error("保存失败:", error);
     } finally {
       setIsSaving(false);
     }
@@ -78,29 +101,32 @@ function RequirementForm() {
 
   const handleConfirmRequirement = async () => {
     setIsConfirming(true);
-    
+
     try {
       // 创建蓝图
-      const result = await request.post(`/api/blueprint/create/${threadId}`, formData);
-      
+      const result = await request.post(
+        `/api/blueprint/create/${threadId}`,
+        formData,
+      );
+
       if (result.code === 0) {
         const blueprintId = result.data.blueprint_id;
-        
+
         // 跳转到工作流页面，传递蓝图ID
-        navigate('/workflowchat', { 
-          state: { 
+        navigate("/workflowchat", {
+          state: {
             threadId: threadId,
             blueprintId: blueprintId,
             formData: formData,
-            userInput: location.state?.userInput || ''
-          } 
+            userInput: location.state?.userInput || "",
+          },
         });
       } else {
-        console.error('创建蓝图失败:', error);
+        console.error("创建蓝图失败:", error);
         // Toast.error(result.message || '创建蓝图失败');
       }
     } catch (error) {
-      console.error('创建蓝图失败:', error);
+      console.error("创建蓝图失败:", error);
       // Toast.error('创建蓝图失败，请重试');
     } finally {
       setIsConfirming(false);
@@ -108,41 +134,44 @@ function RequirementForm() {
   };
 
   const fieldLabels = {
-    requirement_name: '需求名称',
-    mission_statement: '使命陈述',
-    user_and_scenario: '用户与场景',
-    user_input: '用户输入',
-    ai_output: 'AI输出',
-    success_criteria: '成功标准',
-    boundaries_and_limitations: '边界与限制'
+    requirement_name: "需求名称",
+    mission_statement: "使命陈述",
+    user_and_scenario: "用户与场景",
+    user_input: "用户输入",
+    ai_output: "AI输出",
+    success_criteria: "成功标准",
+    boundaries_and_limitations: "边界与限制",
   };
 
   return (
     <Content className="requirement-form-content">
       <div className="requirement-form-container">
         <div className="requirement-form-header">
-          <Button 
-            icon={<IconArrowLeft />} 
+          <Button
+            icon={<IconArrowLeft />}
             theme="borderless"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="header-button"
           >
             返回首页
           </Button>
-          
+
           <div className="header-info">
-            <Title heading={2} style={{ margin: 0, color: '#1a202c' }}>
+            <Title heading={2} style={{ margin: 0, color: "#1a202c" }}>
               需求详情确认
             </Title>
-            <Text type="secondary" style={{ marginTop: '8px', display: 'block' }}>
+            <Text
+              type="secondary"
+              style={{ marginTop: "8px", display: "block" }}
+            >
               请确认以下需求信息，您可以进行编辑和修改
             </Text>
           </div>
 
           <div className="header-actions">
             {!isEditing ? (
-              <Button 
-                icon={<IconEdit />} 
+              <Button
+                icon={<IconEdit />}
                 theme="borderless"
                 onClick={() => setIsEditing(true)}
                 className="header-button"
@@ -151,32 +180,35 @@ function RequirementForm() {
               </Button>
             ) : (
               <Space>
-                <Button 
+                <Button
                   onClick={() => {
                     setIsEditing(false);
                     // 重置为原始数据
                     setFormData({
-                      requirement_name: requirementData?.requirement_name || '',
-                      mission_statement: requirementData?.mission_statement || '',
-                      user_and_scenario: requirementData?.user_and_scenario || '',
-                      user_input: requirementData?.user_input || '',
-                      ai_output: requirementData?.ai_output || '',
-                      success_criteria: requirementData?.success_criteria || '',
-                      boundaries_and_limitations: requirementData?.boundaries_and_limitations || ''
+                      requirement_name: requirementData?.requirement_name || "",
+                      mission_statement:
+                        requirementData?.mission_statement || "",
+                      user_and_scenario:
+                        requirementData?.user_and_scenario || "",
+                      user_input: requirementData?.user_input || "",
+                      ai_output: requirementData?.ai_output || "",
+                      success_criteria: requirementData?.success_criteria || "",
+                      boundaries_and_limitations:
+                        requirementData?.boundaries_and_limitations || "",
                     });
                   }}
                   className="header-button"
                 >
                   取消
                 </Button>
-                <Button 
+                <Button
                   type="primary"
                   icon={<IconSave />}
                   loading={isSaving}
                   onClick={handleSave}
                   className="header-button"
                 >
-                  {isSaving ? '保存中...' : '保存修改'}
+                  {isSaving ? "保存中..." : "保存修改"}
                 </Button>
               </Space>
             )}
@@ -188,14 +220,14 @@ function RequirementForm() {
             {Object.entries(fieldLabels).map(([field, label]) => (
               <div key={field} className="form-field">
                 <div className="field-label">
-                  <Text strong style={{ fontSize: '16px', color: '#1a202c' }}>
+                  <Text strong style={{ fontSize: "16px", color: "#1a202c" }}>
                     {label}
                   </Text>
                 </div>
-                
+
                 <div className="field-content">
                   {isEditing ? (
-                    field === 'requirement_name' ? (
+                    field === "requirement_name" ? (
                       <Input
                         value={formData[field]}
                         onChange={(value) => handleInputChange(field, value)}
@@ -217,13 +249,15 @@ function RequirementForm() {
                     )
                   ) : (
                     <div className="field-display">
-                      <Text style={{ 
-                        lineHeight: '1.6', 
-                        fontSize: '14px',
-                        whiteSpace: 'pre-wrap',
-                        color: '#374151'
-                      }}>
-                        {formData[field] || '暂无内容'}
+                      <Text
+                        style={{
+                          lineHeight: "1.6",
+                          fontSize: "14px",
+                          whiteSpace: "pre-wrap",
+                          color: "#374151",
+                        }}
+                      >
+                        {formData[field] || "暂无内容"}
                       </Text>
                     </div>
                   )}
@@ -234,14 +268,14 @@ function RequirementForm() {
 
           {!isEditing && (
             <div className="form-actions">
-              <Button 
+              <Button
                 type="primary"
                 size="large"
                 loading={isConfirming}
                 onClick={handleConfirmRequirement}
                 className="confirm-button"
               >
-                {isConfirming ? '正在创建蓝图...' : '确认需求'}
+                {isConfirming ? "正在创建蓝图..." : "确认需求"}
               </Button>
             </div>
           )}

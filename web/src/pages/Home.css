@@ -256,45 +256,43 @@
   line-height: 1.4 !important;
 }
 
-
-
 /* ===== 响应式设计 ===== */
 @media (max-width: 768px) {
   .chat-container {
     padding: 40px 20px;
   }
-  
+
   .simple-input-section {
     margin-top: 32px;
     padding: 0 16px;
   }
-  
+
   .main-textarea {
     padding: 16px !important;
   }
-  
+
   .button-section {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .submit-button {
     order: 1;
     width: 100% !important;
   }
-  
+
   .prompts-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .tab-buttons-container {
     flex-wrap: wrap;
     gap: 6px;
     padding: 6px;
     width: 85%;
   }
-  
+
   .tab-button {
     min-width: calc(50% - 3px) !important;
     flex: 1 1 calc(50% - 3px) !important;
@@ -307,19 +305,17 @@
   .chat-container {
     padding: 30px 16px;
   }
-  
+
   .main-textarea {
     padding: 14px !important;
     font-size: 15px !important;
   }
-  
+
   .submit-button {
     height: 44px !important;
     font-size: 15px !important;
   }
-  
 
-  
   .tab-button {
     font-size: 13px !important;
     min-height: 40px !important;
