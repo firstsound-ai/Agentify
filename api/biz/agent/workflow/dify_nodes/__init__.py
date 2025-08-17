@@ -8,6 +8,9 @@ from .loop.tool import create_loop_node
 from .question_classifier.tool import create_question_classifier_node
 from .start.tool import create_start_node
 from .template_transform.tool import create_template_transform_node
+from .tools.arxiv.tool import create_arxiv_search_tool
+from .tools.spider.tool import create_spider_tool
+from .tools.tavily.tool import create_tavily_search_tool
 from .variable_aggregator.tool import create_variable_aggregator_node
 
 tools_list = [
@@ -21,6 +24,9 @@ tools_list = [
     create_http_request_node,
     create_variable_aggregator_node,
     create_document_extractor_node,
+    create_arxiv_search_tool,
+    create_spider_tool,
+    create_tavily_search_tool,
     # create_loop_node,
     # BUG: 循环节点暂时有问题
 ]
