@@ -275,7 +275,7 @@ function Questionnaire() {
 
             <div className="user-input-summary">
               <Text type="secondary" size="large">
-                为了更好地创建您的应用，我们跟您明确几个问题！
+                以下是您的需求，为了更好地创建您的应用，我们跟您明确几个问题！
               </Text>
               <Text
                 style={{
@@ -362,14 +362,6 @@ function Questionnaire() {
 
               <Space>
                 <Button
-                  onClick={handleSkipAdditionalRequirements}
-                  disabled={isSubmitting}
-                  style={{ color: "#000000" }}
-                >
-                  跳过
-                </Button>
-
-                <Button
                   type="primary"
                   onClick={handleSubmitWithAdditionalRequirements}
                   loading={isSubmitting}
@@ -402,17 +394,16 @@ function Questionnaire() {
           </Button>
 
           <div className="user-input-summary">
-            <Text type="secondary" size="large">
-              为了更好地创建您的应用，我们跟您明确几个问题！
+            <Text type="secondary" size="large" style={{ color: "#000000" }}>
+              以下是您的需求，为了更好地创建您的应用，我们跟您明确几个问题！
             </Text>
             <Text
               style={{
                 display: "block",
-                marginTop: "4px",
+                marginTop: "8px",
                 padding: "8px 12px",
                 background: "#f8fafc",
                 borderRadius: "8px",
-                fontSize: "14px",
               }}
             >
               {userInput}

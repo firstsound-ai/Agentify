@@ -512,7 +512,7 @@ function Workflow() {
         // 模拟进度增长
         setProgress((prev) => {
           if (prev < 80) {
-            return prev + Math.random() * 10;
+            return Math.floor(prev + Math.random() * 10); // 使用Math.floor确保整数
           }
           return prev;
         });
@@ -584,59 +584,51 @@ function Workflow() {
     return (
       <Content className="workflow-page-content">
         <div className="workflow-page-container">
-          <div className="workflow-page-header">
-            <Button
-              icon={<IconArrowLeft />}
-              theme="borderless"
-              onClick={() =>
-                navigate("/requirement-form", {
-                  state: {
-                    threadId,
-                    requirementData: formData,
-                    userInput,
-                  },
-                })
-              }
-              className="workflow-back-button"
-            >
-              返回需求确认
-            </Button>
-
-            <div className="workflow-header-info">
-              <Title heading={2} style={{ margin: 0, color: "#1a202c" }}>
-                正在创建工作流
-              </Title>
-              <Text
-                type="secondary"
-                style={{ marginTop: "8px", display: "block" }}
-              >
-                基于您的需求，我们正在为您构建智能工作流
-              </Text>
-            </div>
-          </div>
-
           <Card className="workflow-loading-card">
             <div className="workflow-loading-content">
+              <div className="workflow-loading-header">
+                <Button
+                  icon={<IconArrowLeft />}
+                  theme="borderless"
+                  onClick={() =>
+                    navigate("/requirement-form", {
+                      state: {
+                        threadId,
+                        requirementData: formData,
+                        userInput,
+                      },
+                    })
+                  }
+                  className="workflow-back-button"
+                >
+                  返回需求确认
+                </Button>
+              </div>
+
               <div className="workflow-loading-animation">
                 <Spin size="large" />
               </div>
 
               <div className="workflow-progress-section">
-                <Title
-                  heading={3}
-                  style={{
-                    textAlign: "center",
-                    margin: "32px 0 24px",
-                    color: "#1a202c",
-                  }}
-                >
-                  正在创建工作流蓝图
-                </Title>
+                <div className="workflow-requirement-summary">
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: "14px",
+                      textAlign: "center",
+                      display: "block",
+                    }}
+                  >
+                    正在为 "{formData.requirement_name || "您的需求"}"
+                    创建智能工作流
+                  </Text>
+                </div>
 
                 <div className="workflow-progress-container">
                   <Progress
-                    percent={progress}
+                    percent={Math.floor(progress)} 
                     showInfo={true}
+                    format={(percent) => `${Math.floor(percent)}%`}
                     stroke="#374151"
                     size="large"
                     style={{ marginBottom: "16px" }}
@@ -648,37 +640,40 @@ function Workflow() {
                       color: "#666",
                       display: "block",
                       minHeight: "24px",
+                      lineHeight: "1.5",
                     }}
                   >
                     {currentStep}
                   </Text>
 
                   {/* 显示蓝图状态 */}
-                  <div style={{ textAlign: "center", marginTop: "12px" }}>
-                    <Text style={{ fontSize: "14px", color: "#888" }}>
+                  <div style={{ textAlign: "center", marginTop: "16px" }}>
+                    <Text 
+                      className="workflow-status-indicator"
+                      style={{ 
+                        fontSize: "14px", 
+                        color: "#6b7280",
+                        background: "rgba(243, 244, 246, 0.8)",
+                        padding: "8px 16px",
+                        borderRadius: "20px",
+                        border: "1px solid #e5e7eb",
+                        display: "inline-block",
+                        transition: "all 0.3s ease"
+                      }}>
                       蓝图状态:{" "}
-                      {blueprintStatus === "pending"
-                        ? "处理中"
-                        : blueprintStatus === "completed"
-                          ? "已完成"
-                          : blueprintStatus || "未知"}
+                      <span style={{
+                        color: blueprintStatus === "completed" ? "#10b981" : "#f59e0b",
+                        fontWeight: "600"
+                      }}>
+                        {blueprintStatus === "pending"
+                          ? "处理中"
+                          : blueprintStatus === "completed"
+                            ? "已完成"
+                            : blueprintStatus || "未知"}
+                      </span>
                     </Text>
                   </div>
                 </div>
-              </div>
-
-              <div className="workflow-requirement-summary">
-                <Text
-                  type="secondary"
-                  style={{
-                    fontSize: "14px",
-                    textAlign: "center",
-                    display: "block",
-                  }}
-                >
-                  正在为 "{formData.requirement_name || "您的需求"}"
-                  创建智能工作流
-                </Text>
               </div>
             </div>
           </Card>
