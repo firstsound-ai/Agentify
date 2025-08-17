@@ -99,5 +99,5 @@ def create_if_else_node(
     return {
         "node": if_else_node.to_dict(),
         "observation": f"已经创建了一个名为'{title}'的条件分支节点。",
-        "output": None,
+        "output": [],
     }

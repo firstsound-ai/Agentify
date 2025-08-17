@@ -29,13 +29,13 @@ CONDITION_BRANCH 条件分支
 
 OUTPUT_FORMAT 格式化输出
 
-nodes的编号从node-001开始，按顺序编号
+nodes的编号从node_001开始，按顺序编号，统一使用下划线命名。
 
-遇到顺序执行中的子节点，记作node-xxx-a、node-xxx-b等
+遇到顺序执行中的子节点，记作node_xxx_a、node_xxx_b等
 
-遇条件分支则变成node-cond-xxx
+遇条件分支则变成node_cond_xxx
 
-最终节点为node-final-xxx
+最终节点为node_final_xxx
 
 xxx代指编号（如001,002，003）
 
@@ -49,68 +49,68 @@ xxx代指编号（如001,002，003）
 
 ```json
 {{
-  "workflowId": "wf-b3c1a9...",
+  "workflowId": "wf_b3c1a9...",
   "workflowName": "智能财报分析与预警增强版",
-  "startNodeId": "node-001",
+  "startNodeId": "node_001",
   "nodes": {{
-    "node-001": {{
+    "node_001": {{
       "nodeTitle": "捕获用户输入",
       "nodeType": "TRIGGER_USER_INPUT",
-      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node-002" }}]
+      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node_002" }}]
     }},
-    "node-002": {{
+    "node_002": {{
       "nodeTitle": "查找并读取最新财报",
       "nodeType": "ACTION_WEB_SEARCH",
-      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node-cond-003" }}]
+      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node_cond_003" }}]
     }},
-    "node-cond-003": {{
+    "node_cond_003": {{
       "nodeTitle": "检查公司是否盈利",
       "nodeType": "CONDITION_BRANCH",
       "nodeDescription": "判断依据：净利润 > 0",
       "edges": [
-        {{ "sourceHandle": "onSuccess", "targetNodeId": "node-004a" }},
-        {{ "sourceHandle": "onFailure", "targetNodeId": "node-004b" }}
+        {{ "sourceHandle": "onSuccess", "targetNodeId": "node_004a" }},
+        {{ "sourceHandle": "onFailure", "targetNodeId": "node_004b" }}
       ]
     }},
-    "node-004a": {{
+    "node_004a": {{
       "nodeTitle": "亮点分析",
       "nodeType": "ACTION_LLM_TRANSFORM",
-      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node-cond-006" }}]
+      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node_cond_006" }}]
     }},
-    "node-004b": {{
+    "node_004b": {{
       "nodeTitle": "风险预警",
       "nodeType": "ACTION_LLM_TRANSFORM",
-      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node-cond-006" }}]
+      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node_cond_006" }}]
     }},
-    "node-cond-006": {{
+    "node_cond_006": {{
       "nodeTitle": "是否需要历史对比",
       "nodeType": "CONDITION_BRANCH",
       "nodeDescription": "根据用户输入判断是否需要历史数据对比",
       "edges": [
-        {{ "sourceHandle": "onSuccess", "targetNodeId": "node-007" }},
-        {{ "sourceHandle": "onFailure", "targetNodeId": "node-final-008" }}
+        {{ "sourceHandle": "onSuccess", "targetNodeId": "node_007" }},
+        {{ "sourceHandle": "onFailure", "targetNodeId": "node_final_008" }}
       ]
     }},
-    "node-007": {{
+    "node_007": {{
       "nodeTitle": "获取历史财报数据",
       "nodeType": "ACTION_WEB_SEARCH",
-      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node-008" }}]
+      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node_008" }}]
     }},
-    "node-008": {{
+    "node_008": {{
       "nodeTitle": "趋势分析",
       "nodeType": "ACTION_LLM_TRANSFORM",
-      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node-cond-009" }}]
+      "edges": [{{ "sourceHandle": "default", "targetNodeId": "node_cond_009" }}]
     }},
-    "node-cond-009": {{
+    "node_cond_009": {{
       "nodeTitle": "是否需要更多年份",
       "nodeType": "CONDITION_BRANCH",
       "nodeDescription": "判断是否继续获取更早年份数据",
       "edges": [
-        {{ "sourceHandle": "onSuccess", "targetNodeId": "node-007" }},
-        {{ "sourceHandle": "onFailure", "targetNodeId": "node-final-008" }}
+        {{ "sourceHandle": "onSuccess", "targetNodeId": "node_007" }},
+        {{ "sourceHandle": "onFailure", "targetNodeId": "node_final_008" }}
       ]
     }},
-    "node-final-008": {{
+    "node_final_008": {{
       "nodeTitle": "格式化输出",
       "nodeType": "OUTPUT_FORMAT",
       "edges": []
@@ -144,16 +144,16 @@ MERMAID_PROMPT = ChatPromptTemplate.from_messages(
 
 ## 输出的Mermaid代码示例：
 graph TD
-    node001["node-001: 捕获用户输入<br>(TRIGGER_USER_INPUT)"]
-    node002["node-002: 查找并读取最新财报<br>(ACTION_WEB_SEARCH)"]
-    node003{{"node-cond-003: 检查公司是否盈利<br>(CONDITION_BRANCH)<br>判断依据：净利润 > 0"}}
-    node004a["node-004a: 亮点分析<br>(ACTION_LLM_TRANSFORM)"]
-    node004b["node-004b: 风险预警<br>(ACTION_LLM_TRANSFORM)"]
-    node006{{"node-cond-006: 是否需要历史对比<br>(CONDITION_BRANCH)"}}
-    node007["node-007: 获取历史财报数据<br>(ACTION_WEB_SEARCH)"]
-    node008["node-008: 趋势分析<br>(ACTION_LLM_TRANSFORM)"]
-    node009{{"node-cond-009: 是否需要更多年份<br>(CONDITION_BRANCH)"}}
-    nodeFinal["node-final-008: 格式化输出<br>(OUTPUT_FORMAT)"]
+    node001["node_001: 捕获用户输入<br>(TRIGGER_USER_INPUT)"]
+    node002["node_002: 查找并读取最新财报<br>(ACTION_WEB_SEARCH)"]
+    node003{{"node_cond_003: 检查公司是否盈利<br>(CONDITION_BRANCH)<br>判断依据：净利润 > 0"}}
+    node004a["node_004a: 亮点分析<br>(ACTION_LLM_TRANSFORM)"]
+    node004b["node_004b: 风险预警<br>(ACTION_LLM_TRANSFORM)"]
+    node006{{"node_cond_006: 是否需要历史对比<br>(CONDITION_BRANCH)"}}
+    node007["node_007: 获取历史财报数据<br>(ACTION_WEB_SEARCH)"]
+    node008["node_008: 趋势分析<br>(ACTION_LLM_TRANSFORM)"]
+    node009{{"node_cond_009: 是否需要更多年份<br>(CONDITION_BRANCH)"}}
+    nodeFinal["node_final_008: 格式化输出<br>(OUTPUT_FORMAT)"]
 
     node001 -->|default| node002
     node002 -->|default| node003
@@ -201,15 +201,15 @@ CONDITION_BRANCH 条件分支
 
 OUTPUT_FORMAT 格式化输出
 
-nodes的编号从node-001开始，按顺序编号
+nodes的编号从node_001开始，按顺序编号，统一使用下划线命名。
 
-遇到顺序执行中的子节点，记作node-xxx-a、node-xxx-b等
+遇到顺序执行中的子节点，记作node_xxx_a、node_xxx_b等
 
-遇条件分支则变成node-cond-xxx
+遇条件分支则变成node_cond_xxx
 
-最终节点为node-final-xxx
+最终节点为node_final_xxx
 
-xxx代指编号（如001,002，003）
+xxx代指编号（如001,002,003）
 
 # 输出格式
 
