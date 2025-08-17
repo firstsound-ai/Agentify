@@ -27,6 +27,7 @@ function Workflow() {
   const [messages, setMessages] = useState([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const messageIdRef = useRef(3);
+  const currentSSEController = useRef(null); 
 
   // 初始化AI欢迎消息
   const initializeWelcomeMessage = useCallback((stepCount) => {
@@ -66,18 +67,135 @@ function Workflow() {
       setMessages(prev => [...prev, aiResponseLoading]);
     }, 100);
     
-    // 模拟AI响应
-    setTimeout(() => {
-      const mockResponse = `我理解您的问题："${content}"。这个工作流包含 ${workflowData?.steps?.length || 0} 个步骤，每个步骤都经过精心设计以确保高效执行。您想了解哪个具体步骤呢？`;
+    // 发送SSE请求
+    sendChatMessageSSE(content, aiMessageId);
+  }, [threadId]);
+
+  // SSE聊天请求函数
+  const sendChatMessageSSE = useCallback(async (content, messageId) => {
+    try {
+      // 取消之前的请求
+      if (currentSSEController.current) {
+        currentSSEController.current.abort();
+      }
+
+      // 创建新的AbortController
+      const controller = new AbortController();
+      currentSSEController.current = controller;
+
+      const response = await fetch(`/api/blueprint/chat/completions/${threadId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        },
+        body: JSON.stringify({
+          prompt: content
+        }),
+        signal: controller.signal, // 添加取消信号
+      });
+
+      if (!response.ok) {
+        throw new Error(`网络请求失败: ${response.status} ${response.statusText}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          // 流结束，设置完成状态
+          setMessages(prev => prev.map(msg => 
+            msg.id === messageId 
+              ? { ...msg, status: 'complete' }
+              : msg
+          ));
+          setIsAiTyping(false);
+          currentSSEController.current = null;
+          break;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+        
+        // 使用正则表达式匹配所有的data块，包括在同一行的多个块
+        const dataMatches = chunk.match(/data:\s*\{[^}]*\}/g) || [];
+        
+        for (const match of dataMatches) {
+          // 提取JSON部分（去掉"data: "前缀）
+          const jsonStr = match.replace(/^data:\s*/, '').trim();
+          
+          // 检查是否是结束标记
+          if (jsonStr === '[DONE]') {
+            setMessages(prev => prev.map(msg => 
+              msg.id === messageId 
+                ? { ...msg, status: 'complete' }
+                : msg
+            ));
+            setIsAiTyping(false);
+            currentSSEController.current = null;
+            return;
+          }
+          
+          try {
+            const parsed = JSON.parse(jsonStr);
+            let contentToAdd = '';
+            
+            // 支持你的后端格式：{"chunk": "文本"}
+            if (parsed.chunk !== undefined) {
+              contentToAdd = parsed.chunk;
+            }
+            // 支持OpenAI格式
+            else if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+              contentToAdd = parsed.choices[0].delta.content;
+            }
+            // 支持简单的content字段
+            else if (parsed.content !== undefined) {
+              contentToAdd = parsed.content;
+            }
+            
+            if (contentToAdd) {
+              setMessages(prev => prev.map(msg => {
+                if (msg.id === messageId) {
+                  return { 
+                    ...msg, 
+                    content: (msg.content || '') + contentToAdd, 
+                    status: 'incomplete' 
+                  };
+                }
+                return msg;
+              }));
+            }
+            
+          } catch (e) {
+            console.debug('SSE数据解析失败:', e.message, 'JSON字符串:', jsonStr);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('SSE请求失败:', error);
       
+      // 如果是主动取消的请求，不显示错误
+      if (error.name === 'AbortError') {
+        console.log('SSE请求被取消');
+        return;
+      }
+      
+      // 显示错误消息
       setMessages(prev => prev.map(msg => 
-        msg.id === aiMessageId 
-          ? { ...msg, content: mockResponse, status: 'complete' }
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              content: '抱歉，处理您的消息时出现了问题，请稍后重试。\n错误信息: ' + error.message, 
+              status: 'error' 
+            }
           : msg
       ));
       setIsAiTyping(false);
-    }, 1500);
-  }, [workflowData]);
+      currentSSEController.current = null;
+    }
+  }, [threadId]);
 
   // 处理消息变化
   const handleChatsChange = useCallback((chats) => {
@@ -339,6 +457,12 @@ function Workflow() {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
         pollingRef.current = null;
+      }
+      
+      // 清理SSE连接
+      if (currentSSEController.current) {
+        currentSSEController.current.abort();
+        currentSSEController.current = null;
       }
     };
 
@@ -622,6 +746,11 @@ function Workflow() {
               onMessageSend={handleMessageSend}
               showStopGenerate={isAiTyping}
               onStopGenerator={() => {
+                // 取消SSE请求
+                if (currentSSEController.current) {
+                  currentSSEController.current.abort();
+                  currentSSEController.current = null;
+                }
                 setIsAiTyping(false);
                 console.log('停止生成');
               }}
