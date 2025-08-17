@@ -6,7 +6,7 @@ from biz.agent.requirement.prompt import DRAFT_PROMPT, FINALIZE_PROMPT, QUESTION
 from biz.agent.requirement.state import GraphState
 from common.utils.get_llm_model import get_llm_model
 
-llm = get_llm_model(model_name="gemini-2.5-flash", temperature=0.5)
+llm = get_llm_model(model_name="gemini-2.5-pro", temperature=0.5)
 
 draft_chain = DRAFT_PROMPT | llm
 questionnaire_chain = QUESTIONS_PROMPT | llm
