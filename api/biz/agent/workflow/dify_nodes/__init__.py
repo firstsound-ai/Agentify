@@ -1,6 +1,7 @@
 from .answer.tool import create_answer_node
 from .code.tool import create_code_node
 from .document_extractor.tool import create_document_extractor_node
+from .end.tool import create_end_node
 from .http_request.tool import create_http_request_node
 from .if_else.tool import create_if_else_node
 from .llm.tool import create_llm_node
@@ -17,6 +18,7 @@ tools_list = [
     create_llm_node,
     create_start_node,
     create_answer_node,
+    create_end_node,
     create_code_node,
     create_template_transform_node,
     create_question_classifier_node,

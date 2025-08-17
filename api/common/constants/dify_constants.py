@@ -1,7 +1,7 @@
 APP_TYPES = [
-    "workflow",
-    "advanced-chat",
-    "chat",
-    "agent-chat",
-    "completion",
+    "workflow",  # workflow
+    "advanced-chat",  # chatflow
+    # "chat",
+    # "agent-chat",
+    # "completion",
 ]
