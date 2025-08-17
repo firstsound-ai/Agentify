@@ -1,0 +1,72 @@
+{
+    "id": "1755252530475",
+    "type": "custom",
+    "data": {
+        "type": "tool",
+        "title": "Arxiv 搜索",
+        "desc": "",
+        "tool_parameters": {
+            "query": {
+                "type": "mixed",
+                "value": null
+            }
+        },
+        "tool_configurations": {},
+        "tool_node_version": "2",
+        "provider_id": "langgenius/arxiv/arxiv",
+        "provider_type": "builtin",
+        "provider_name": "langgenius/arxiv/arxiv",
+        "tool_name": "arxiv_search",
+        "tool_label": "Arxiv 搜索",
+        "tool_description": "一个用于从Arxiv存储库搜索科学论文和文章的工具。 输入可以是Arxiv ID或作者姓名。",
+        "is_team_authorization": true,
+        "output_schema": null,
+        "paramSchemas": [
+            {
+                "name": "query",
+                "label": {
+                    "en_US": "Query string",
+                    "zh_Hans": "查询字符串",
+                    "pt_BR": "Query string",
+                    "ja_JP": "Query string"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": true,
+                "default": null,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "string",
+                "human_description": {
+                    "en_US": "The Arxiv ID or author's name used for searching.",
+                    "zh_Hans": "用于搜索的Arxiv ID或作者姓名。",
+                    "pt_BR": "The Arxiv ID or author's name used for searching.",
+                    "ja_JP": "The Arxiv ID or author's name used for searching."
+                },
+                "form": "llm",
+                "llm_description": "The Arxiv ID or author's name used for searching."
+            }
+        ],
+        "params": {
+            "query": ""
+        },
+        "selected": true
+    },
+    "position": {
+        "x": 859.8444976963408,
+        "y": -197.05719604163824
+    },
+    "targetPosition": "left",
+    "sourcePosition": "right",
+    "positionAbsolute": {
+        "x": 859.8444976963408,
+        "y": -197.05719604163824
+    },
+    "width": 244,
+    "height": 54,
+    "selected": true
+}

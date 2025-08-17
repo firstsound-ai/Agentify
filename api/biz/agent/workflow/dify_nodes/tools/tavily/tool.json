@@ -1,0 +1,539 @@
+{
+    "id": "1755250216546",
+    "type": "custom",
+    "data": {
+        "type": "tool",
+        "title": "Tavily Search",
+        "desc": "",
+        "tool_parameters": {
+            "query": {
+                "type": "mixed",
+                "value": "今天的新闻"
+            },
+            "search_depth": {
+                "type": "constant",
+                "value": "basic"
+            },
+            "topic": {
+                "type": "constant",
+                "value": "general"
+            },
+            "days": {
+                "type": "constant",
+                "value": 3
+            },
+            "time_range": {
+                "type": "constant",
+                "value": "not_specified"
+            }
+        },
+        "tool_configurations": {
+            "max_results": {
+                "type": "constant",
+                "value": 5
+            },
+            "include_images": {
+                "type": "constant",
+                "value": false
+            },
+            "include_image_descriptions": {
+                "type": "constant",
+                "value": false
+            },
+            "include_answer": {
+                "type": "constant",
+                "value": false
+            },
+            "include_raw_content": {
+                "type": "constant",
+                "value": false
+            },
+            "include_domains": {
+                "type": "mixed",
+                "value": null
+            },
+            "exclude_domains": {
+                "type": "mixed",
+                "value": null
+            }
+        },
+        "tool_node_version": "2",
+        "provider_id": "langgenius/tavily/tavily",
+        "provider_type": "builtin",
+        "provider_name": "langgenius/tavily/tavily",
+        "tool_name": "tavily_search",
+        "tool_label": "Tavily Search",
+        "tool_description": "专为人工智能代理 (LLM) 构建的搜索引擎工具，可快速提供实时、准确和真实的结果。",
+        "is_team_authorization": true,
+        "output_schema": null,
+        "paramSchemas": [
+            {
+                "name": "query",
+                "label": {
+                    "en_US": "Query",
+                    "zh_Hans": "查询",
+                    "pt_BR": "Query",
+                    "ja_JP": "Query"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": true,
+                "default": null,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "string",
+                "human_description": {
+                    "en_US": "The search query you want to execute with Tavily.",
+                    "zh_Hans": "您想用 Tavily 执行的搜索查询。",
+                    "pt_BR": "The search query you want to execute with Tavily.",
+                    "ja_JP": "The search query you want to execute with Tavily."
+                },
+                "form": "llm",
+                "llm_description": "The search query."
+            },
+            {
+                "name": "search_depth",
+                "label": {
+                    "en_US": "Search Depth",
+                    "zh_Hans": "搜索深度",
+                    "pt_BR": "Search Depth",
+                    "ja_JP": "Search Depth"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": "basic",
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [
+                    {
+                        "value": "basic",
+                        "label": {
+                            "en_US": "Basic",
+                            "zh_Hans": "基本",
+                            "pt_BR": "Basic",
+                            "ja_JP": "Basic"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "advanced",
+                        "label": {
+                            "en_US": "Advanced",
+                            "zh_Hans": "高级",
+                            "pt_BR": "Advanced",
+                            "ja_JP": "Advanced"
+                        },
+                        "icon": ""
+                    }
+                ],
+                "type": "select",
+                "human_description": {
+                    "en_US": "The depth of the search.",
+                    "zh_Hans": "搜索的深度。",
+                    "pt_BR": "The depth of the search.",
+                    "ja_JP": "The depth of the search."
+                },
+                "form": "llm",
+                "llm_description": "The depth of the search. 'basic' for standard search, 'advanced' for more comprehensive results."
+            },
+            {
+                "name": "topic",
+                "label": {
+                    "en_US": "Topic",
+                    "zh_Hans": "主题",
+                    "pt_BR": "Topic",
+                    "ja_JP": "Topic"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": "general",
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [
+                    {
+                        "value": "general",
+                        "label": {
+                            "en_US": "General",
+                            "zh_Hans": "一般",
+                            "pt_BR": "General",
+                            "ja_JP": "General"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "news",
+                        "label": {
+                            "en_US": "News",
+                            "zh_Hans": "新闻",
+                            "pt_BR": "News",
+                            "ja_JP": "News"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "finance",
+                        "label": {
+                            "en_US": "Finance",
+                            "zh_Hans": "金融",
+                            "pt_BR": "Finance",
+                            "ja_JP": "Finance"
+                        },
+                        "icon": ""
+                    }
+                ],
+                "type": "select",
+                "human_description": {
+                    "en_US": "The category of the search.",
+                    "zh_Hans": "搜索的类别。",
+                    "pt_BR": "The category of the search.",
+                    "ja_JP": "The category of the search."
+                },
+                "form": "llm",
+                "llm_description": "The category of the search. Options include 'general', 'news', or 'finance'."
+            },
+            {
+                "name": "days",
+                "label": {
+                    "en_US": "Days",
+                    "zh_Hans": "天数",
+                    "pt_BR": "Days",
+                    "ja_JP": "Days"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": 3,
+                "min": 1,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "number",
+                "human_description": {
+                    "en_US": "The number of days back from the current date to include in the search results (only applicable when \"topic\" is \"news\").",
+                    "zh_Hans": "从当前日期起向前追溯的天数，以包含在搜索结果中（仅当\"topic\"为\"news\"时适用）。",
+                    "pt_BR": "The number of days back from the current date to include in the search results (only applicable when \"topic\" is \"news\").",
+                    "ja_JP": "The number of days back from the current date to include in the search results (only applicable when \"topic\" is \"news\")."
+                },
+                "form": "llm",
+                "llm_description": "The number of days back from the current date to include in the search results. Only applicable when \"topic\" is \"news\"."
+            },
+            {
+                "name": "time_range",
+                "label": {
+                    "en_US": "Time Range",
+                    "zh_Hans": "时间范围",
+                    "pt_BR": "Time Range",
+                    "ja_JP": "Time Range"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": "not_specified",
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [
+                    {
+                        "value": "not_specified",
+                        "label": {
+                            "en_US": "Not Specified",
+                            "zh_Hans": "不指定",
+                            "pt_BR": "Not Specified",
+                            "ja_JP": "Not Specified"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "day",
+                        "label": {
+                            "en_US": "Day",
+                            "zh_Hans": "天",
+                            "pt_BR": "Day",
+                            "ja_JP": "Day"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "week",
+                        "label": {
+                            "en_US": "Week",
+                            "zh_Hans": "周",
+                            "pt_BR": "Week",
+                            "ja_JP": "Week"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "month",
+                        "label": {
+                            "en_US": "Month",
+                            "zh_Hans": "月",
+                            "pt_BR": "Month",
+                            "ja_JP": "Month"
+                        },
+                        "icon": ""
+                    },
+                    {
+                        "value": "year",
+                        "label": {
+                            "en_US": "Year",
+                            "zh_Hans": "年",
+                            "pt_BR": "Year",
+                            "ja_JP": "Year"
+                        },
+                        "icon": ""
+                    }
+                ],
+                "type": "select",
+                "human_description": {
+                    "en_US": "The time range back from the current date to filter results.",
+                    "zh_Hans": "从当前日期起向后筛选结果的时间范围。",
+                    "pt_BR": "The time range back from the current date to filter results.",
+                    "ja_JP": "The time range back from the current date to filter results."
+                },
+                "form": "llm",
+                "llm_description": "The time range back from the current date to filter results. Options include 'not_specified', 'day', 'week', 'month', or 'year'."
+            },
+            {
+                "name": "max_results",
+                "label": {
+                    "en_US": "Max Results",
+                    "zh_Hans": "最大结果数",
+                    "pt_BR": "Max Results",
+                    "ja_JP": "Max Results"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": 5,
+                "min": 1,
+                "max": 20,
+                "precision": null,
+                "options": [],
+                "type": "number",
+                "human_description": {
+                    "en_US": "The maximum number of search results to return.",
+                    "zh_Hans": "要返回的最大搜索结果数。",
+                    "pt_BR": "The maximum number of search results to return.",
+                    "ja_JP": "The maximum number of search results to return."
+                },
+                "form": "form",
+                "llm_description": "The maximum number of search results to return. Range is 1-20."
+            },
+            {
+                "name": "include_images",
+                "label": {
+                    "en_US": "Include Images",
+                    "zh_Hans": "包含图片",
+                    "pt_BR": "Include Images",
+                    "ja_JP": "Include Images"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": 0,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "boolean",
+                "human_description": {
+                    "en_US": "Include a list of query-related images in the response.",
+                    "zh_Hans": "在响应中包含与查询相关的图片列表。",
+                    "pt_BR": "Include a list of query-related images in the response.",
+                    "ja_JP": "Include a list of query-related images in the response."
+                },
+                "form": "form",
+                "llm_description": "When set to true, includes a list of query-related images in the response."
+            },
+            {
+                "name": "include_image_descriptions",
+                "label": {
+                    "en_US": "Include Image Descriptions",
+                    "zh_Hans": "包含图片描述",
+                    "pt_BR": "Include Image Descriptions",
+                    "ja_JP": "Include Image Descriptions"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": 0,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "boolean",
+                "human_description": {
+                    "en_US": "When include_images is True, adds descriptive text for each image.",
+                    "zh_Hans": "当 include_images 为 True 时，为每个图像添加描述文本。",
+                    "pt_BR": "When include_images is True, adds descriptive text for each image.",
+                    "ja_JP": "When include_images is True, adds descriptive text for each image."
+                },
+                "form": "form",
+                "llm_description": "When include_images is True and this is set to true, adds descriptive text for each image."
+            },
+            {
+                "name": "include_answer",
+                "label": {
+                    "en_US": "Include Answer",
+                    "zh_Hans": "包含答案",
+                    "pt_BR": "Include Answer",
+                    "ja_JP": "Include Answer"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": 0,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "boolean",
+                "human_description": {
+                    "en_US": "Include a short answer to the original query in the response.",
+                    "zh_Hans": "在响应中包含对原始查询的简短回答。",
+                    "pt_BR": "Include a short answer to the original query in the response.",
+                    "ja_JP": "Include a short answer to the original query in the response."
+                },
+                "form": "form",
+                "llm_description": "When set to true, includes a short answer to the original query in the response."
+            },
+            {
+                "name": "include_raw_content",
+                "label": {
+                    "en_US": "Include Raw Content",
+                    "zh_Hans": "包含原始内容",
+                    "pt_BR": "Include Raw Content",
+                    "ja_JP": "Include Raw Content"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": 0,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "boolean",
+                "human_description": {
+                    "en_US": "Include the cleaned and parsed HTML content of each search result.",
+                    "zh_Hans": "包含每个搜索结果的已清理和解析的HTML内容。",
+                    "pt_BR": "Include the cleaned and parsed HTML content of each search result.",
+                    "ja_JP": "Include the cleaned and parsed HTML content of each search result."
+                },
+                "form": "form",
+                "llm_description": "When set to true, includes the cleaned and parsed HTML content of each search result."
+            },
+            {
+                "name": "include_domains",
+                "label": {
+                    "en_US": "Include Domains",
+                    "zh_Hans": "包含域",
+                    "pt_BR": "Include Domains",
+                    "ja_JP": "Include Domains"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": null,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "string",
+                "human_description": {
+                    "en_US": "A comma-separated list of domains to specifically include in the search results.",
+                    "zh_Hans": "要在搜索结果中特别包含的域的逗号分隔列表。",
+                    "pt_BR": "A comma-separated list of domains to specifically include in the search results.",
+                    "ja_JP": "A comma-separated list of domains to specifically include in the search results."
+                },
+                "form": "form",
+                "llm_description": "A comma-separated list of domains to specifically include in the search results."
+            },
+            {
+                "name": "exclude_domains",
+                "label": {
+                    "en_US": "Exclude Domains",
+                    "zh_Hans": "排除域",
+                    "pt_BR": "Exclude Domains",
+                    "ja_JP": "Exclude Domains"
+                },
+                "placeholder": null,
+                "scope": null,
+                "auto_generate": null,
+                "template": null,
+                "required": false,
+                "default": null,
+                "min": null,
+                "max": null,
+                "precision": null,
+                "options": [],
+                "type": "string",
+                "human_description": {
+                    "en_US": "A comma-separated list of domains to specifically exclude from the search results.",
+                    "zh_Hans": "要从搜索结果中特别排除的域的逗号分隔列表。",
+                    "pt_BR": "A comma-separated list of domains to specifically exclude from the search results.",
+                    "ja_JP": "A comma-separated list of domains to specifically exclude from the search results."
+                },
+                "form": "form",
+                "llm_description": "A comma-separated list of domains to specifically exclude from the search results."
+            }
+        ],
+        "params": {
+            "query": "",
+            "search_depth": "",
+            "topic": "",
+            "days": "",
+            "time_range": "",
+            "max_results": "",
+            "include_images": "",
+            "include_image_descriptions": "",
+            "include_answer": "",
+            "include_raw_content": "",
+            "include_domains": "",
+            "exclude_domains": ""
+        },
+        "selected": false
+    },
+    "position": {
+        "x": 403.6103779600036,
+        "y": -181.08023544628858
+    },
+    "targetPosition": "left",
+    "sourcePosition": "right",
+    "positionAbsolute": {
+        "x": 403.6103779600036,
+        "y": -181.08023544628858
+    },
+    "width": 244,
+    "height": 246,
+    "selected": false
+}
