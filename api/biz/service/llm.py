@@ -3,13 +3,7 @@ from langchain.schema import HumanMessage
 from typing import AsyncIterable
 from common.utils.get_llm_model import get_llm_model
 
-
-model_kwargs = {
-    "base_url": "https://api.siliconflow.cn/v1",
-    "api_key": "sk-dyeoanatkugzcldlztzvybznubiueuhieiopgytuycztryqe",
-}
-
-llm = get_llm_model(model_name="Qwen/Qwen3-30B-A3B-Instruct-2507", temperature=0.5, model_kwargs=model_kwargs)
+llm = get_llm_model(model_name="gemini-2.5-flash", temperature=0.5)
 
 class LLMBIZ:
     @staticmethod

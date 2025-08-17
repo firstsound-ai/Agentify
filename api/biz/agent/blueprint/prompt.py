@@ -275,7 +275,10 @@ DECISION_PROMPT = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """你负责判断用户的最新对话内容（MESSAGES）是否和修改工作流有关。若是，返回'update', 若否，返回'end'。仅返回update或end，不允许输出其他任何内容"""
+            """你负责判断用户的最新对话内容（MESSAGES）是否和修改工作流有关。若是，返回'update', 若否，返回'end'。仅返回update或end，不允许输出其他任何内容。
+            
+            只有用户明确说了要修改，并且提到修改指令，才返回update。反之，均为end。
+            """
         ),
         (
             "user", 

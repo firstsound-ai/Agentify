@@ -9,14 +9,10 @@ from typing import List, Optional, TypedDict
 from biz.agent.blueprint.prompt import CHAT_PROMPT, DECISION_PROMPT, WORKFLOW_REFINE_PROMPT, MERMAID_PROMPT
 from pydantic import BaseModel, Field
 import json
+from settings import settings
 
-model_kwargs = {
-    "base_url": "https://api.siliconflow.cn/v1",
-    "api_key": "sk-dyeoanatkugzcldlztzvybznubiueuhieiopgytuycztryqe",
-}
-
-llm = get_llm_model(model_name="Qwen/Qwen3-30B-A3B-Instruct-2507", temperature=0.5, model_kwargs=model_kwargs)
 # llm = get_llm_model(model_name="gemini-2.5-flash", temperature=0.5)
+llm = get_llm_model(model_name="Qwen/Qwen3-30B-A3B-Instruct-2507", temperature=0.5)
 
 chat_chain = CHAT_PROMPT | llm
 decision_chain = DECISION_PROMPT | llm
@@ -53,6 +49,7 @@ def continue_node(state: MessageState):
     decision = decision_chain.invoke({"messages": state["initial_messages"]})
     """条件函数，决定下一步流向"""
     assert decision.content in ["update", "end"]
+    print("decision", decision.content)
     return {"decision": decision.content}
 
 def generate_mermaid_node(state: MessageState):
