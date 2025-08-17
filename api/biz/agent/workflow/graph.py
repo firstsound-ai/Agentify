@@ -34,6 +34,7 @@ _app = None
 def get_workflow_agent():
     global _app
     if _app is None:
-        checkpointer = get_checkpointer()
-        _app = workflow.compile(checkpointer=checkpointer)
+        # checkpointer = get_checkpointer()
+        # _app = workflow.compile(checkpointer=checkpointer)
+        _app = workflow.compile()
     return _app
