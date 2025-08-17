@@ -3,6 +3,7 @@ from fastapi import Depends, FastAPI
 from common.utils.dify_client import DifyClient, get_dify_client
 from web.controller.requirement import router as requirement_router
 from web.controller.blueprint import router as blueprint_router
+from web.controller.workflow import router as workflow_router
 from web.vo import Result
 
 
@@ -24,3 +25,4 @@ def register_controllers(app: FastAPI):
 
     app.include_router(requirement_router)
     app.include_router(blueprint_router)
+    app.include_router(workflow_router)
