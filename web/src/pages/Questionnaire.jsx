@@ -245,11 +245,6 @@ function Questionnaire() {
     }
   };
 
-  const handleSkipAdditionalRequirements = () => {
-    setAdditionalRequirements("");
-    submitAnswers();
-  };
-
   const handleSubmitWithAdditionalRequirements = () => {
     submitAnswers();
   };
@@ -262,32 +257,26 @@ function Questionnaire() {
   if (isComplete) {
     return (
       <Content className="questionnaire-content">
-        <div className="questionnaire-container" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          padding: '20px'
-        }}>
+        <div className="questionnaire-container">
           <Card className="question-card" style={{
             width: '100%',
             maxWidth: '700px',
             borderRadius: '24px',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
+            boxShadow: '0 10px 20px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(226, 232, 240, 0.6)',
             backdropFilter: 'blur(20px)',
             background: 'rgba(255, 255, 255, 0.95)'
           }}>
             <div className="completion-card" style={{
               textAlign: 'center',
-              padding: '40px 32px'
+              padding: '10px 8px'
             }}>
               {/* 返回按钮 */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'flex-start',
-                marginBottom: '20px',
-                paddingBottom: '16px',
+                marginBottom: '10px',
+                paddingBottom: '8px',
                 borderBottom: '1px solid rgba(226, 232, 240, 0.5)'
               }}>
                 <Button
@@ -321,7 +310,7 @@ function Questionnaire() {
                   heading={3}
                   style={{
                     textAlign: "center",
-                    margin: "0 0 32px 0",
+                    margin: "0 0 24px 0",
                     color: "#1a202c",
                     fontSize: "24px",
                     fontWeight: "700",
@@ -348,18 +337,7 @@ function Questionnaire() {
                       marginBottom: "16px",
                     }}
                   />
-                  <Text
-                    style={{
-                      textAlign: "center",
-                      fontSize: "16px",
-                      color: "#666",
-                      display: "block",
-                      minHeight: "24px",
-                      lineHeight: "1.5",
-                    }}
-                  >
-                    {currentLoadingStep}
-                  </Text>
+
 
                   {/* 显示处理状态 */}
                   <div style={{ textAlign: "center", marginTop: "16px" }}>
@@ -388,11 +366,10 @@ function Questionnaire() {
               </div>
 
               <div style={{
-                padding: '24px',
+                padding: '12px',
                 background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
                 borderRadius: '16px',
                 border: '1px solid #e2e8f0',
-                marginTop: '20px',
                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
               }}>
                 <Text
@@ -403,7 +380,7 @@ function Questionnaire() {
                     display: "block",
                   }}
                 >
-                  我们正在根据您的需求和答案创建定制化的应用方案，请稍候片刻
+                  正在根据您的需求和答案创建定制化的应用方案，请稍候片刻
                 </Text>
               </div>
             </div>
@@ -625,7 +602,6 @@ function Questionnaire() {
                           }
                           maxLength={200}
                           showClear
-                          style={{ marginTop: "12px", marginLeft: "32px" }}
                         />
                       </div>
                     )}
