@@ -1,7 +1,7 @@
 /* 工作流页面样式 - 使用局部化的类名 */
 .workflow-page-content {
   height: 100vh;
-  padding: 12px 10px;
+  padding: 24px 20px;
   font-family:
     "Inter",
     -apple-system,
@@ -11,6 +11,18 @@
     sans-serif;
   display: flex;
   flex-direction: column;
+}
+
+.workflow-loading-content {
+  text-align: center;
+  padding: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.workflow-loading-animation {
+  margin-bottom: 12px;
+  animation: pulse 2s infinite;
 }
 
 .workflow-page-container {
@@ -198,17 +210,69 @@
   border-radius: 24px !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
   border: 1px solid rgba(226, 232, 240, 0.6) !important;
-  padding: 20px !important;
   backdrop-filter: blur(20px) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* 加载框头部 */
+.workflow-loading-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.workflow-loading-header .workflow-back-button {
+  background: rgba(248, 250, 252, 0.8) !important;
+  border: 1px solid rgba(203, 213, 224, 0.6) !important;
+  border-radius: 12px !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+.workflow-loading-header .workflow-back-button:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: #94a3b8 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .workflow-loading-content {
   text-align: center;
   padding: 10px 10px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .workflow-loading-animation {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
 }
 
 .workflow-loading-animation .semi-spin {
@@ -216,19 +280,50 @@
 }
 
 .workflow-progress-section {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+  animation: slideIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .workflow-progress-container {
-  max-width: 400px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
 .workflow-requirement-summary {
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
+  margin: 20px 20px;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); */
+  animation: slideIn 1s ease-out 0.4s both;
+}
+
+/* 状态指示器动画 */
+.workflow-status-indicator {
+  animation: statusPulse 2s infinite ease-in-out;
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
 }
 
 .workflow-steps-container {
@@ -504,8 +599,18 @@
     padding: 24px 20px !important;
   }
 
+  .workflow-loading-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+
+  .workflow-loading-header .workflow-back-button {
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+  }
+
   .workflow-loading-content {
-    padding: 20px 10px;
+    padding: 0;
   }
 
   .workflow-step-item {
@@ -571,18 +676,22 @@
 }
 .workflow-progress-container .semi-progress-line-outer {
   background-color: #e2e8f0 !important;
-  border-radius: 8px !important;
-  height: 12px !important;
+  border-radius: 12px !important;
+  height: 16px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06) !important;
 }
 
 .workflow-progress-container .semi-progress-line-inner {
-  background: linear-gradient(90deg, #374151 0%, #1f2937 100%) !important;
-  border-radius: 8px !important;
-  transition: width 0.3s ease !important;
+  background: linear-gradient(90deg, #374151 0%, #1f2937 50%, #111827 100%) !important;
+  border-radius: 12px !important;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 4px rgba(55, 65, 81, 0.3) !important;
 }
 
 .workflow-progress-container .semi-progress-text {
   color: #374151 !important;
-  font-weight: 600 !important;
-  font-size: 16px !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+  margin-top: 12px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }
