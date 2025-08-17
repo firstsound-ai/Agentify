@@ -73,7 +73,6 @@ async def stream_chat(
 ):
     latest_blueprint = BlueprintBIZ.get_latest_blueprint(db, thread_id)
     workflow = getattr(latest_blueprint, "workflow")
-    workflow = json.dumps(workflow, ensure_ascii=False)
 
     def event_generator():
         try:
@@ -91,10 +90,14 @@ async def stream_chat(
             chat_workflow = get_chat_workflow()
             config = RunnableConfig(configurable={"thread_id": thread_id})
 
+            decision = None
             # 运行工作流并生成事件流
             for output in chat_workflow.stream(initial_state, config=config, stream_mode="messages"):
                 if output[0] and output[0].content:
                     # 构建SSE格式数据
+                    if output[0].content in ['update', 'end']:
+                        decision = output[0].content
+                        break
                     sse_data = f"data: {json.dumps({'chunk': output[0].content}, ensure_ascii=False)}\n\n"
                     yield sse_data
 
@@ -103,8 +106,6 @@ async def stream_chat(
             checkpoint = checkpointer.get({"configurable": {"thread_id": thread_id}})
 
             if checkpoint:
-                decision = checkpoint["channel_values"].get("decision")
-
                 if decision == "end":
                     sse_data = f"data: {json.dumps({'chunk': "No need for update."}, ensure_ascii=False)}\n\n"
                     yield sse_data
