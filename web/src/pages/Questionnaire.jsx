@@ -114,7 +114,7 @@ function Questionnaire() {
 
   // 轮询获取需求字段
   const pollRequirementFields = async () => {
-    const maxAttempts = 30;
+    const maxAttempts = 60;
     const interval = 3000;
     let attempts = 0;
 

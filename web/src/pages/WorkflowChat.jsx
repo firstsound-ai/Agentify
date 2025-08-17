@@ -33,7 +33,9 @@ function Workflow() {
   const [workflowData, setWorkflowData] = useState(null);
   const [blueprintStatus, setBlueprintStatus] = useState("pending");
   const [mermaidCode, setMermaidCode] = useState("");
+  const [isWorkflowLoading, setIsWorkflowLoading] = useState(false); // 动态工作流加载状态
   const pollingRef = useRef(null);
+  const workflowPollingRef = useRef(null); // 用于聊天后的工作流轮询
   const [messages, setMessages] = useState([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const messageIdRef = useRef(3);
@@ -63,6 +65,7 @@ function Workflow() {
   // 处理用户发送消息
   const handleMessageSend = useCallback((content, attachment) => {
     setIsAiTyping(true);
+    setIsWorkflowLoading(true); // 开始时就设置工作流为加载状态
     
     // 创建AI响应消息（先显示加载状态）
     const aiMessageId = String(messageIdRef.current++);
@@ -126,6 +129,12 @@ function Workflow() {
           ));
           setIsAiTyping(false);
           currentSSEController.current = null;
+          
+          // 启动工作流更新轮询（加载状态已在发送消息时设置）
+          workflowPollingRef.current = setInterval(() => {
+            pollWorkflowUpdates();
+          }, 3000);
+          
           break;
         }
 
@@ -147,6 +156,12 @@ function Workflow() {
             ));
             setIsAiTyping(false);
             currentSSEController.current = null;
+            
+            // 启动工作流更新轮询（加载状态已在发送消息时设置）
+            workflowPollingRef.current = setInterval(() => {
+              pollWorkflowUpdates();
+            }, 3000);
+            
             return;
           }
           
@@ -191,6 +206,7 @@ function Workflow() {
       // 如果是主动取消的请求，不显示错误
       if (error.name === 'AbortError') {
         console.log('SSE请求被取消');
+        setIsWorkflowLoading(false); // 取消请求时清除工作流加载状态
         return;
       }
       
@@ -205,6 +221,7 @@ function Workflow() {
           : msg
       ));
       setIsAiTyping(false);
+      setIsWorkflowLoading(false); // 出错时清除工作流加载状态
       currentSSEController.current = null;
     }
   }, [threadId]);
@@ -213,78 +230,6 @@ function Workflow() {
   const handleChatsChange = useCallback((chats) => {
     setMessages(chats);
   }, []);
-
-  // 轮询蓝图状态
-  const pollBlueprintStatus = useCallback(async () => {
-    try {
-      const result = await request.get(`/api/blueprint/list/${threadId}`);
-
-      console.log("轮询蓝图状态响应:", result);
-
-      if (
-        result.code === 0 &&
-        result.data &&
-        result.data.blueprints &&
-        Array.isArray(result.data.blueprints)
-      ) {
-        const currentBlueprint = result.data.blueprints.find(
-          (bp) => bp.id === blueprintId,
-        );
-
-        if (currentBlueprint) {
-          setBlueprintStatus(currentBlueprint.status);
-
-          if (currentBlueprint.status === "completed") {
-            // 蓝图准备完成，获取工作流数据
-            await fetchWorkflowData();
-            // 停止轮询
-            if (pollingRef.current) {
-              clearInterval(pollingRef.current);
-              pollingRef.current = null;
-            }
-          }
-        }
-      } else {
-        console.warn("蓝图列表数据格式不正确:", result);
-      }
-    } catch (error) {
-      console.error("轮询蓝图状态失败:", error);
-    }
-  }, [threadId, blueprintId]);
-
-  // 获取工作流数据
-  const fetchWorkflowData = async () => {
-    try {
-      const result = await request.get(`/api/blueprint/status/${blueprintId}`);
-
-      if (result.code === 0 && result.data && result.data.workflow) {
-        const workflowInfo = result.data.workflow;
-        const parsedSteps = parseWorkflowSteps(workflowInfo);
-
-        const newWorkflowData = {
-          name:
-            workflowInfo.workflowName ||
-            formData.requirement_name ||
-            "智能工作流",
-          workflowId: workflowInfo.workflowId,
-          steps: parsedSteps,
-          rawData: workflowInfo,
-        };
-
-        setWorkflowData(newWorkflowData);
-        setMermaidCode(result.data.mermaid_code || "");
-        setIsLoading(false);
-        setProgress(100);
-        setCurrentStep("工作流创建完成！");
-
-        // 初始化AI欢迎消息
-        initializeWelcomeMessage(parsedSteps.length);
-      }
-    } catch (error) {
-      console.error("获取工作流数据失败:", error);
-      setCurrentStep("工作流数据获取失败");
-    }
-  };
 
   // 解析工作流数据，生成有序的步骤列表
   const parseWorkflowSteps = useCallback((workflowData) => {
@@ -450,6 +395,84 @@ function Workflow() {
     return steps.sort((a, b) => a.stepNumber - b.stepNumber);
   }, []);
 
+  // 轮询蓝图状态
+  const pollBlueprintStatus = useCallback(async () => {
+    try {
+      const result = await request.get(`/api/blueprint/latest/${threadId}`);
+
+      if (result.code === 0 && result.data) {
+        const latestBlueprint = result.data;
+        
+        // 更新蓝图状态
+        setBlueprintStatus(latestBlueprint.status);
+
+        if (latestBlueprint.status === "completed" && latestBlueprint.workflow) {
+          // 蓝图准备完成，直接处理工作流数据
+          const workflowInfo = latestBlueprint.workflow;
+          const parsedSteps = parseWorkflowSteps(workflowInfo);
+
+          const newWorkflowData = {
+            name: workflowInfo.workflowName || formData.requirement_name || "智能工作流",
+            workflowId: workflowInfo.workflowId,
+            steps: parsedSteps,
+            rawData: workflowInfo,
+          };
+
+          setWorkflowData(newWorkflowData);
+          setMermaidCode(latestBlueprint.mermaid_code || "");
+          setIsLoading(false);
+          setProgress(100);
+          setCurrentStep("工作流创建完成！");
+
+          // 初始化AI欢迎消息
+          initializeWelcomeMessage(parsedSteps.length);
+          
+          // 停止轮询
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
+        }
+      } else {
+        console.warn("获取最新蓝图数据格式不正确:", result);
+      }
+    } catch (error) {
+      console.error("轮询蓝图状态失败:", error);
+    }
+  }, [threadId, formData.requirement_name, parseWorkflowSteps, initializeWelcomeMessage]);
+
+  // 聊天后轮询工作流更新
+  const pollWorkflowUpdates = useCallback(async () => {
+    try {
+      const result = await request.get(`/api/blueprint/latest/${threadId}`);
+
+      if (result.code === 0 && result.data && result.data.status === "completed" && result.data.workflow) {
+        const latestBlueprint = result.data;
+        const workflowInfo = latestBlueprint.workflow;
+        const parsedSteps = parseWorkflowSteps(workflowInfo);
+
+        const newWorkflowData = {
+          name: workflowInfo.workflowName || formData.requirement_name || "智能工作流",
+          workflowId: workflowInfo.workflowId,
+          steps: parsedSteps,
+          rawData: workflowInfo,
+        };
+
+        setWorkflowData(newWorkflowData);
+        setMermaidCode(latestBlueprint.mermaid_code || "");
+        setIsWorkflowLoading(false);
+        
+        // 停止轮询
+        if (workflowPollingRef.current) {
+          clearInterval(workflowPollingRef.current);
+          workflowPollingRef.current = null;
+        }
+      }
+    } catch (error) {
+      console.error("轮询工作流更新失败:", error);
+    }
+  }, [threadId, formData.requirement_name, parseWorkflowSteps]);
+
   // 修改工作流创建过程，改为轮询蓝图状态
   useEffect(() => {
     if (!blueprintId) {
@@ -485,6 +508,12 @@ function Workflow() {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
         pollingRef.current = null;
+      }
+      
+      // 清理工作流轮询
+      if (workflowPollingRef.current) {
+        clearInterval(workflowPollingRef.current);
+        workflowPollingRef.current = null;
       }
       
       // 清理SSE连接
@@ -705,8 +734,26 @@ function Workflow() {
                 itemKey="steps"
               >
                 <div className="workflow-steps">
-                  <div className="workflow-steps-container">
-                    {workflowData?.steps?.map((step, index) => (
+                  {isWorkflowLoading ? (
+                    <div className="workflow-loading-container" style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '60px 20px',
+                      textAlign: 'center'
+                    }}>
+                      <Spin size="large" />
+                      <Text style={{ marginTop: '16px', color: '#666' }}>
+                        {isAiTyping ? '正在等待AI回复...' : '正在更新工作流...'}
+                      </Text>
+                      <Text style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
+                        {isAiTyping ? '根据您的输入生成回复' : '工作流即将根据对话内容进行调整'}
+                      </Text>
+                    </div>
+                  ) : (
+                    <div className="workflow-steps-container">
+                      {workflowData?.steps?.map((step, index) => (
                       <div key={step.id} className="workflow-step-item">
                         <div className={`workflow-step-number ${step.type}`}>
                           {step.stepNumber}
@@ -782,34 +829,8 @@ function Workflow() {
                         </div>
                       </div>
                     ))}
-                  </div>
-
-                  <div className="workflow-stats-summary">
-                    <Text type="secondary" style={{ fontSize: "14px" }}>
-                      工作流统计: 共 {workflowData?.steps?.length || 0} 个步骤
-                      {(() => {
-                        const branchCount =
-                          workflowData?.steps?.filter(
-                            (s) => s.nodeType === "CONDITION_BRANCH",
-                          ).length || 0;
-                        const hasLoop = workflowData?.steps?.some((s) =>
-                          s.edges.some((edge) =>
-                            workflowData.steps.some(
-                              (target) =>
-                                target.id === edge.targetNodeId &&
-                                target.stepNumber <= s.stepNumber,
-                            ),
-                          ),
-                        );
-                        return (
-                          <>
-                            {branchCount > 0 && ` • ${branchCount} 个判断分支`}
-                            {hasLoop && " • 包含循环逻辑"}
-                          </>
-                        );
-                      })()}
-                    </Text>
-                  </div>
+                    </div>
+                  )}
                 </div>
               </TabPane>
 
