@@ -1,5 +1,5 @@
 import json
-
+from common.utils.dify_client import DifyClient
 from fastapi import BackgroundTasks
 from langchain_core.runnables.config import RunnableConfig
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,15 +8,16 @@ from sqlalchemy.orm import Session
 from biz.agent.blueprint.graph import get_blueprint_workflow
 from biz.agent.workflow.graph import get_workflow_agent
 from biz.agent.blueprint.state import GraphState
-from common.dto.blueprint import BlueprintResponse, Workflow
+from common.dto.blueprint import BlueprintResponse, Workflow, DifyWorkflowResponse
 from common.dto.user import UserInfo
 from common.enums.error_code import ErrorCode
 from common.enums.task import TaskStatus
 from common.exceptions.general_exception import GeneralException
 from dal.dao.requirement import RequirementDAO
 from dal.dao.blueprint import BlueprintDAO
+from dal.dao.dify_workflow import DifyWorkflowDAO
 from dal.database import get_db
-
+from biz.agent.workflow.utils import create_workflow_edges
 
 class BlueprintBIZ:
     @staticmethod
@@ -116,7 +117,28 @@ class BlueprintBIZ:
             raise
         except Exception as e:
             raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
+        
+    @staticmethod
+    def get_dify_workflow_status(db, app_id, user_info):
+        try:
+            dify_workflow = DifyWorkflowDAO.get_dify_workflow_by_id(db, app_id)
 
+            if not dify_workflow:
+                raise GeneralException(ErrorCode.NOT_FOUND, detail="app不存在")
+
+            response = DifyWorkflowResponse(
+                app_id=app_id,
+                status=TaskStatus(getattr(dify_workflow, "status")),
+                edges=getattr(dify_workflow, "edges"),
+                nodes=getattr(dify_workflow, "nodes")
+            )
+            return response
+    
+        except GeneralException:
+            raise
+        except Exception as e:
+            raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
+        
     @staticmethod
     def get_blueprint_status(
         db: Session, blueprint_id: str, user_info: UserInfo
@@ -134,7 +156,6 @@ class BlueprintBIZ:
             )
 
             workflow_data = getattr(blueprint, "workflow")
-            print("wd", workflow_data)
 
             if workflow_data:
                 response.workflow = Workflow.model_validate(workflow_data)
@@ -228,40 +249,110 @@ class BlueprintBIZ:
         finally:
             db.close()
 
-    def get_appid_by_thread(db: Session, user_info: UserInfo, thread_id: str):
-        requirement = RequirementDAO.get_requirement_by_id(db, thread_id)
+    @staticmethod
+    def create_node(
+        db: Session,
+        app_id: str, 
+        app_type: str,
+        app_name: str,
+        app_description: str,
+        background_tasks: BackgroundTasks,
+        user_info: UserInfo,
+        thread_id: str
+    ):  
+        try:
+            with db.begin():
+                DifyWorkflowDAO.create_dify_workflow(
+                    db,
+                    thread_id,
+                    app_id, 
+                    app_type,
+                    app_name,
+                    app_description,
+                    user_info
+                )
 
-        requirement_doc_keys = [
-            "requirement_name",
-            "mission_statement",
-            "user_and_scenario",
-            "user_input",
-            "ai_output",
-            "success_criteria",
-            "boundaries_and_limitations",
-        ]
+                background_tasks.add_task(BlueprintBIZ._get_node, user_info, thread_id, app_id)
+        except SQLAlchemyError as e:
+            raise GeneralException(ErrorCode.DATABASE_ERROR, detail=str(e))
+        except Exception as e:
+            raise GeneralException(ErrorCode.INTERNAL_SERVER_ERROR, detail=str(e))
 
-        requirement_doc_json = {
-            key: getattr(requirement, key) for key in requirement_doc_keys
-        }
+    def _get_node(user_info: UserInfo, thread_id: str, app_id: str):
+        try:
+            db = next(get_db())
+            requirement = RequirementDAO.get_requirement_by_id(db, thread_id)
 
-        blueprint = BlueprintDAO.get_lastest_blueprint(db, thread_id)
+            requirement_doc_keys = [
+                "requirement_name",
+                "mission_statement",
+                "user_and_scenario",
+                "user_input",
+                "ai_output",
+                "success_criteria",
+                "boundaries_and_limitations",
+            ]
+
+            requirement_doc_json = {
+                key: getattr(requirement, key) for key in requirement_doc_keys
+            }
+
+            blueprint = BlueprintDAO.get_lastest_blueprint(db, thread_id)
+            
+            sop_json = getattr(blueprint, "workflow")
+
+            app = get_workflow_agent()
+
+            initial_input = {
+                "requirement_doc": requirement_doc_json,
+                "sop": sop_json,
+                "nodes_created": [],
+                "available_variables": [],
+                "messages": [],
+            }
+
+            config = RunnableConfig(configurable={"thread_id": thread_id})
+            final_state = app.invoke(initial_input, config=config)
+
+            print("node init")
+
+            node_json = final_state['nodes_created']
+            edge_json = create_workflow_edges(sop_json, node_json)
+
+            print("edge init")
+
+            client = DifyClient()
+
+            draft = client.get_draft(app_id)
+            draft['graph']['edges'] = edge_json
+            draft['graph']['nodes'] = node_json
+
+            result = client.set_draft(app_id, draft)
+
+            print("result", result)
+
+            if result['result'] != "sucess":
+                raise GeneralException(
+                    ErrorCode.DIFY_CLIENT_ERROR, "应用更新失败"
+                )
+
+            DifyWorkflowDAO.update_dify_workflow(db, 
+                                                app_id=app_id, 
+                                                status=TaskStatus.COMPLETED, 
+                                                edges=edge_json,
+                                                nodes=node_json
+                                            )
+            db.commit()
         
-        sop_json = getattr(blueprint, "workflow")
-
-        app = get_workflow_agent()
-
-        initial_input = {
-            "requirement_doc": requirement_doc_json,
-            "sop": sop_json,
-            "nodes_created": [],
-            "available_variables": [],
-            "messages": [],
-        }
-
-        config = RunnableConfig(configurable={"thread_id": thread_id})
-        final_state = app.invoke(initial_input, config=config)
-
-        print("node init")
-        print(json.dumps(final_state["nodes_created"], indent=2, ensure_ascii=False))
-        return None
+        except Exception as e:
+            DifyWorkflowDAO.update_dify_workflow(
+                db,
+                app_id=app_id,
+                status=TaskStatus.FAILED
+            )
+            import traceback
+            traceback.print_exc()
+            db.commit()
+        finally:
+            db.close()
+        return final_state["nodes_created"]

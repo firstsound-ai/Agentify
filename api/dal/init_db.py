@@ -7,7 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from dal.database import Base
-from dal.po.requirement import Requirement  # noqa: F401
+# from dal.po.requirement import Requirement  # noqa: F401
+from dal.po.dify_workflow import DifyWorkflow
 from settings import settings
 
 engine = create_engine(settings.DATABASE_URL)
