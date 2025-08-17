@@ -19,6 +19,20 @@ import DynamicFlowchart from "../components/DynamicFlowchart";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
+// 工具函数：获取完整的API URL
+const getApiUrl = (path) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  
+  // 如果没有配置base URL或者为空字符串，说明是开发环境，直接使用相对路径（会通过Vite代理）
+  if (!baseUrl || baseUrl.trim() === '') {
+    return path;
+  }
+  
+  // 生产环境使用完整URL，确保去掉baseUrl末尾的斜杠避免重复
+  const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
+  return `${cleanBaseUrl}${path}`;
+};
+
 function Workflow() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,7 +53,7 @@ function Workflow() {
   const [messages, setMessages] = useState([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const messageIdRef = useRef(3);
-  const currentSSEController = useRef(null); 
+  const currentSSEController = useRef(null);
 
   // 初始化AI欢迎消息
   const initializeWelcomeMessage = useCallback((stepCount) => {
@@ -47,9 +61,8 @@ function Workflow() {
       role: "assistant",
       id: "1",
       createAt: Date.now(),
-      content: `根据您的需求，我为您草拟了一份包含 ${
-        stepCount || 0
-      } 个步骤的工作流程，您可以在左侧查看完整流程和流程图。如果您需要继续修改，可以通过聊天来修改您的工作流。`,
+      content: `根据您的需求，我为您草拟了一份包含 ${stepCount || 0
+        } 个步骤的工作流程，您可以在左侧查看完整流程和流程图。如果您需要继续修改，可以通过聊天来修改您的工作流。`,
       status: "complete",
     };
     setMessages([welcomeMessage]);
@@ -66,7 +79,7 @@ function Workflow() {
   const handleMessageSend = useCallback((content, attachment) => {
     setIsAiTyping(true);
     setIsWorkflowLoading(true); // 开始时就设置工作流为加载状态
-    
+
     // 创建AI响应消息（先显示加载状态）
     const aiMessageId = String(messageIdRef.current++);
     const aiResponseLoading = {
@@ -76,12 +89,12 @@ function Workflow() {
       content: '',
       status: 'loading'
     };
-    
+
     // 添加AI加载消息
     setTimeout(() => {
       setMessages(prev => [...prev, aiResponseLoading]);
     }, 100);
-    
+
     // 发送SSE请求
     sendChatMessageSSE(content, aiMessageId);
   }, [threadId]);
@@ -94,11 +107,14 @@ function Workflow() {
         currentSSEController.current.abort();
       }
 
-      // 创建新的AbortController
       const controller = new AbortController();
       currentSSEController.current = controller;
 
-      const response = await fetch(`/api/blueprint/chat/completions/${threadId}`, {
+      // 使用工具函数获取正确的API URL
+      const fullUrl = getApiUrl(`/api/blueprint/chat/completions/${threadId}`);
+      console.log('SSE请求URL:', fullUrl, '环境变量VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+
+      const response = await fetch(fullUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +123,7 @@ function Workflow() {
         body: JSON.stringify({
           prompt: content
         }),
-        signal: controller.signal, // 添加取消信号
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -119,56 +135,56 @@ function Workflow() {
 
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) {
           // 流结束，设置完成状态
-          setMessages(prev => prev.map(msg => 
-            msg.id === messageId 
+          setMessages(prev => prev.map(msg =>
+            msg.id === messageId
               ? { ...msg, status: 'complete' }
               : msg
           ));
           setIsAiTyping(false);
           currentSSEController.current = null;
-          
+
           // 启动工作流更新轮询（加载状态已在发送消息时设置）
           workflowPollingRef.current = setInterval(() => {
             pollWorkflowUpdates();
           }, 3000);
-          
+
           break;
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        
+
         // 使用正则表达式匹配所有的data块，包括在同一行的多个块
         const dataMatches = chunk.match(/data:\s*\{[^}]*\}/g) || [];
-        
+
         for (const match of dataMatches) {
           // 提取JSON部分（去掉"data: "前缀）
           const jsonStr = match.replace(/^data:\s*/, '').trim();
-          
+
           // 检查是否是结束标记
           if (jsonStr === '[DONE]') {
-            setMessages(prev => prev.map(msg => 
-              msg.id === messageId 
+            setMessages(prev => prev.map(msg =>
+              msg.id === messageId
                 ? { ...msg, status: 'complete' }
                 : msg
             ));
             setIsAiTyping(false);
             currentSSEController.current = null;
-            
+
             // 启动工作流更新轮询（加载状态已在发送消息时设置）
             workflowPollingRef.current = setInterval(() => {
               pollWorkflowUpdates();
             }, 3000);
-            
+
             return;
           }
-          
+
           try {
             const parsed = JSON.parse(jsonStr);
             let contentToAdd = '';
-            
+
             // 支持你的后端格式：{"chunk": "文本"}
             if (parsed.chunk !== undefined) {
               contentToAdd = parsed.chunk;
@@ -181,20 +197,20 @@ function Workflow() {
             else if (parsed.content !== undefined) {
               contentToAdd = parsed.content;
             }
-            
+
             if (contentToAdd) {
               setMessages(prev => prev.map(msg => {
                 if (msg.id === messageId) {
-                  return { 
-                    ...msg, 
-                    content: (msg.content || '') + contentToAdd, 
-                    status: 'incomplete' 
+                  return {
+                    ...msg,
+                    content: (msg.content || '') + contentToAdd,
+                    status: 'incomplete'
                   };
                 }
                 return msg;
               }));
             }
-            
+
           } catch (e) {
             console.debug('SSE数据解析失败:', e.message, 'JSON字符串:', jsonStr);
           }
@@ -202,22 +218,22 @@ function Workflow() {
       }
     } catch (error) {
       console.error('SSE请求失败:', error);
-      
+
       // 如果是主动取消的请求，不显示错误
       if (error.name === 'AbortError') {
         console.log('SSE请求被取消');
         setIsWorkflowLoading(false); // 取消请求时清除工作流加载状态
         return;
       }
-      
+
       // 显示错误消息
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { 
-              ...msg, 
-              content: '抱歉，处理您的消息时出现了问题，请稍后重试。\n错误信息: ' + error.message, 
-              status: 'error' 
-            }
+      setMessages(prev => prev.map(msg =>
+        msg.id === messageId
+          ? {
+            ...msg,
+            content: '抱歉，处理您的消息时出现了问题，请稍后重试。\n错误信息: ' + error.message,
+            status: 'error'
+          }
           : msg
       ));
       setIsAiTyping(false);
@@ -402,7 +418,7 @@ function Workflow() {
 
       if (result.code === 0 && result.data) {
         const latestBlueprint = result.data;
-        
+
         // 更新蓝图状态
         setBlueprintStatus(latestBlueprint.status);
 
@@ -426,7 +442,7 @@ function Workflow() {
 
           // 初始化AI欢迎消息
           initializeWelcomeMessage(parsedSteps.length);
-          
+
           // 停止轮询
           if (pollingRef.current) {
             clearInterval(pollingRef.current);
@@ -461,7 +477,7 @@ function Workflow() {
         setWorkflowData(newWorkflowData);
         setMermaidCode(latestBlueprint.mermaid_code || "");
         setIsWorkflowLoading(false);
-        
+
         // 停止轮询
         if (workflowPollingRef.current) {
           clearInterval(workflowPollingRef.current);
@@ -509,13 +525,13 @@ function Workflow() {
         clearInterval(pollingRef.current);
         pollingRef.current = null;
       }
-      
+
       // 清理工作流轮询
       if (workflowPollingRef.current) {
         clearInterval(workflowPollingRef.current);
         workflowPollingRef.current = null;
       }
-      
+
       // 清理SSE连接
       if (currentSSEController.current) {
         currentSSEController.current.abort();
@@ -754,81 +770,81 @@ function Workflow() {
                   ) : (
                     <div className="workflow-steps-container">
                       {workflowData?.steps?.map((step, index) => (
-                      <div key={step.id} className="workflow-step-item">
-                        <div className={`workflow-step-number ${step.type}`}>
-                          {step.stepNumber}
-                        </div>
-                        <div className="workflow-step-content">
-                          <Title
-                            heading={5}
-                            style={{ margin: "0 0 4px 0", color: "#1a202c" }}
-                          >
-                            {step.name}
-                          </Title>
-                          <Text
-                            type="secondary"
-                            style={{ fontSize: "13px", marginBottom: "8px" }}
-                          >
-                            {step.description}
-                          </Text>
-
-                          {/* 显示节点类型和可能的分支 */}
-                          <div className="workflow-step-details">
-                            <div
-                              className={`workflow-step-type-badge ${step.type}`}
+                        <div key={step.id} className="workflow-step-item">
+                          <div className={`workflow-step-number ${step.type}`}>
+                            {step.stepNumber}
+                          </div>
+                          <div className="workflow-step-content">
+                            <Title
+                              heading={5}
+                              style={{ margin: "0 0 4px 0", color: "#1a202c" }}
                             >
-                              {step.typeText}
-                            </div>
+                              {step.name}
+                            </Title>
+                            <Text
+                              type="secondary"
+                              style={{ fontSize: "13px", marginBottom: "8px" }}
+                            >
+                              {step.description}
+                            </Text>
 
-                            {/* 显示是否为主路径 */}
-                            {step.isMainPath === false && (
-                              <div className="workflow-branch-badge">分支</div>
-                            )}
+                            {/* 显示节点类型和可能的分支 */}
+                            <div className="workflow-step-details">
+                              <div
+                                className={`workflow-step-type-badge ${step.type}`}
+                              >
+                                {step.typeText}
+                              </div>
 
-                            {/* 如果是条件分支，显示分支信息 */}
-                            {step.nodeType === "CONDITION_BRANCH" &&
-                              step.edges.length > 1 && (
-                                <div
-                                  style={{ fontSize: "11px", color: "#666" }}
-                                >
-                                  分支:{" "}
-                                  {step.edges
-                                    .map((edge) => edge.sourceHandle)
-                                    .join(" / ")}
-                                </div>
+                              {/* 显示是否为主路径 */}
+                              {step.isMainPath === false && (
+                                <div className="workflow-branch-badge">分支</div>
                               )}
 
-                            {/* 如果有循环，显示循环标识 */}
-                            {step.edges.some((edge) =>
-                              workflowData.steps.some(
-                                (s) =>
-                                  s.id === edge.targetNodeId &&
-                                  s.stepNumber <= step.stepNumber,
-                              ),
-                            ) && (
-                              <div className="workflow-loop-badge">循环</div>
+                              {/* 如果是条件分支，显示分支信息 */}
+                              {step.nodeType === "CONDITION_BRANCH" &&
+                                step.edges.length > 1 && (
+                                  <div
+                                    style={{ fontSize: "11px", color: "#666" }}
+                                  >
+                                    分支:{" "}
+                                    {step.edges
+                                      .map((edge) => edge.sourceHandle)
+                                      .join(" / ")}
+                                  </div>
+                                )}
+
+                              {/* 如果有循环，显示循环标识 */}
+                              {step.edges.some((edge) =>
+                                workflowData.steps.some(
+                                  (s) =>
+                                    s.id === edge.targetNodeId &&
+                                    s.stepNumber <= step.stepNumber,
+                                ),
+                              ) && (
+                                  <div className="workflow-loop-badge">循环</div>
+                                )}
+                            </div>
+
+                            {/* 显示连接的下一步节点 */}
+                            {step.edges.length > 0 && (
+                              <div className="workflow-next-step-info">
+                                下一步:{" "}
+                                {step.edges
+                                  .map((edge) => {
+                                    const nextStep = workflowData.steps.find(
+                                      (s) => s.id === edge.targetNodeId,
+                                    );
+                                    return nextStep
+                                      ? `${nextStep.name}(${edge.sourceHandle})`
+                                      : edge.targetNodeId;
+                                  })
+                                  .join(", ")}
+                              </div>
                             )}
                           </div>
-
-                          {/* 显示连接的下一步节点 */}
-                          {step.edges.length > 0 && (
-                            <div className="workflow-next-step-info">
-                              下一步:{" "}
-                              {step.edges
-                                .map((edge) => {
-                                  const nextStep = workflowData.steps.find(
-                                    (s) => s.id === edge.targetNodeId,
-                                  );
-                                  return nextStep
-                                    ? `${nextStep.name}(${edge.sourceHandle})`
-                                    : edge.targetNodeId;
-                                })
-                                .join(", ")}
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    ))}
+                      ))}
                     </div>
                   )}
                 </div>
