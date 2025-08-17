@@ -610,19 +610,22 @@ function Workflow() {
               </div>
 
               <div className="workflow-progress-section">
-                <div className="workflow-requirement-summary">
-                  <Text
-                    type="secondary"
-                    style={{
-                      fontSize: "14px",
-                      textAlign: "center",
-                      display: "block",
-                    }}
-                  >
-                    正在为 "{formData.requirement_name || "您的需求"}"
-                    创建智能工作流
-                  </Text>
-                </div>
+                <Title
+                  heading={3}
+                  style={{
+                    textAlign: "center",
+                    margin: "0 0 32px 0",
+                    color: "#1a202c",
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    background: "linear-gradient(135deg, #1a202c 0%, #374151 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  正在创建工作流蓝图
+                </Title>
 
                 <div className="workflow-progress-container">
                   <Progress
@@ -643,7 +646,7 @@ function Workflow() {
                       lineHeight: "1.5",
                     }}
                   >
-                    {currentStep}
+                    "{formData.requirement_name || "您的需求"}"生成中...
                   </Text>
 
                   {/* 显示蓝图状态 */}
@@ -729,7 +732,7 @@ function Workflow() {
           {/* 左侧：工作流信息和流程图 */}
           <Card className="workflow-left-panel">
             <div className="workflow-info">
-              <Title heading={3} style={{ color: "#1a202c" }}>
+              <Title heading={4} style={{ color: "#1a202c" }}>
                 {workflowData?.name}
               </Title>
             </div>

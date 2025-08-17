@@ -137,7 +137,7 @@ function Home() {
         // 直接计算并设置进度
         const pollProgress = (attempts / maxAttempts) * 100;
         updateProgress(Math.round(Math.min(pollProgress, 95)));
-        setLoadingText(`正在生成需求问卷...`);
+        setLoadingText(`正在为您搭建个性化问卷...`);
 
         const statusResult = await getRequirementStatus(threadId);
         console.log("轮询状态结果:", statusResult);
@@ -517,7 +517,7 @@ function Home() {
 
         {/* 加载进度模态框 */}
         <Modal
-          title="正在处理您的需求"
+          title="需求处理中"
           visible={showLoadingModal}
           footer={null}
           closable={false}
@@ -539,7 +539,7 @@ function Home() {
             <div
               style={{ marginTop: "16px", color: "#6b7280", fontSize: "12px" }}
             >
-              请稍候，我们正在为您精心准备个性化问卷...
+              稍等片刻，即将呈现
             </div>
             <div style={{ marginTop: "24px" }}>
               <Button

@@ -10,8 +10,7 @@ import {
   Space,
   Spin,
   Input,
-  TextArea,
-  Toast,
+  TextArea
 } from "@douyinfe/semi-ui";
 import { IconArrowLeft, IconArrowRight } from "@douyinfe/semi-icons";
 import request from "../utils/request";
@@ -36,6 +35,8 @@ function Questionnaire() {
   const [additionalRequirements, setAdditionalRequirements] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingText, setLoadingText] = useState("正在生成应用...");
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [currentLoadingStep, setCurrentLoadingStep] = useState("");
 
   if (!questionnaire || !questionnaire.questions) {
     return (
@@ -118,8 +119,25 @@ function Questionnaire() {
     const interval = 3000;
     let attempts = 0;
 
+    // 初始化进度状态
+    setLoadingProgress(20);
+    setCurrentLoadingStep("正在分析您的需求...");
+
     const poll = async () => {
       attempts++;
+      
+      // 更新进度条和步骤描述
+      const progressValue = Math.min(20 + (attempts / maxAttempts) * 70, 90);
+      setLoadingProgress(Math.floor(progressValue));
+      
+      if (attempts <= 20) {
+        setCurrentLoadingStep("正在分析您的需求...");
+      } else if (attempts <= 40) {
+        setCurrentLoadingStep("正在生成个性化方案...");
+      } else {
+        setCurrentLoadingStep("正在完善应用细节...");
+      }
+      
       setLoadingText(`正在生成需求表单... (${attempts}/${maxAttempts})`);
 
       try {
@@ -128,13 +146,19 @@ function Questionnaire() {
 
         // 200状态码且data不为null，表示成功
         if (result.code === 0 && result.data !== null) {
-          navigate("/requirement-form", {
-            state: {
-              userInput: userInput,
-              threadId: threadId,
-              requirementData: result.data,
-            },
-          });
+          setLoadingProgress(100);
+          setCurrentLoadingStep("生成完成！");
+          
+          // 短暂显示完成状态
+          setTimeout(() => {
+            navigate("/requirement-form", {
+              state: {
+                userInput: userInput,
+                threadId: threadId,
+                requirementData: result.data,
+              },
+            });
+          }, 500);
           return;
         }
       } catch (error) {
@@ -151,6 +175,7 @@ function Questionnaire() {
       } else {
         setIsComplete(false);
         setIsSubmitting(false);
+        setCurrentLoadingStep("生成超时，请重试");
       }
     };
 
@@ -159,6 +184,8 @@ function Questionnaire() {
 
   const submitAnswers = async () => {
     setIsSubmitting(true);
+    setLoadingProgress(0);
+    setCurrentLoadingStep("正在提交您的答案...");
 
     try {
       const answersArray = [];
@@ -184,6 +211,8 @@ function Questionnaire() {
       };
 
       console.log("提交的答案数据:", submissionData);
+      setLoadingProgress(10);
+      setCurrentLoadingStep("正在处理您的答案...");
 
       // 调用API提交答案
       const result = await request.post(
@@ -193,6 +222,7 @@ function Questionnaire() {
 
       if (result.code === 0) {
         setIsComplete(true);
+        setCurrentLoadingStep("答案提交成功，开始生成方案...");
 
         // 开始轮询需求字段
         await pollRequirementFields();
@@ -202,6 +232,8 @@ function Questionnaire() {
     } catch (error) {
       console.error("提交答案失败:", error);
       setIsSubmitting(false);
+      setLoadingProgress(0);
+      setCurrentLoadingStep("提交失败，请重试");
     }
   };
 
@@ -230,27 +262,150 @@ function Questionnaire() {
   if (isComplete) {
     return (
       <Content className="questionnaire-content">
-        <div className="questionnaire-container">
-          <Card className="question-card">
-            <div className="completion-card">
-              <div className="generating-icon">
+        <div className="questionnaire-container" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          padding: '20px'
+        }}>
+          <Card className="question-card" style={{
+            width: '100%',
+            maxWidth: '700px',
+            borderRadius: '24px',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(226, 232, 240, 0.6)',
+            backdropFilter: 'blur(20px)',
+            background: 'rgba(255, 255, 255, 0.95)'
+          }}>
+            <div className="completion-card" style={{
+              textAlign: 'center',
+              padding: '40px 32px'
+            }}>
+              {/* 返回按钮 */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                marginBottom: '20px',
+                paddingBottom: '16px',
+                borderBottom: '1px solid rgba(226, 232, 240, 0.5)'
+              }}>
+                <Button
+                  icon={<IconArrowLeft />}
+                  theme="borderless"
+                  onClick={() => navigate("/")}
+                  style={{
+                    background: 'rgba(248, 250, 252, 0.8)',
+                    border: '1px solid rgba(203, 213, 224, 0.6)',
+                    borderRadius: '12px',
+                    color: '#475569',
+                    fontWeight: '500',
+                    padding: '8px 16px',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  返回首页
+                </Button>
+              </div>
+
+              <div className="generating-icon questionnaire-loading-animation" style={{
+                marginBottom: '32px'
+              }}>
                 <Spin size="large" />
               </div>
-              <Title
-                heading={2}
-                style={{
-                  textAlign: "center",
-                  margin: "24px 0",
-                  color: "#1a202c",
-                }}
-              >
-                {loadingText}
-              </Title>
-              <Text
-                style={{ textAlign: "center", fontSize: "16px", color: "#666" }}
-              >
-                我们正在根据您的需求和答案创建定制化的应用方案，请稍候片刻
-              </Text>
+
+              <div style={{
+                marginBottom: '32px'
+              }}>
+                <Title
+                  heading={3}
+                  style={{
+                    textAlign: "center",
+                    margin: "0 0 32px 0",
+                    color: "#1a202c",
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    background: "linear-gradient(135deg, #1a202c 0%, #374151 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  正在生成需求表单
+                </Title>
+
+                <div className="questionnaire-progress-container" style={{
+                  maxWidth: '500px',
+                  margin: '0 auto'
+                }}>
+                  <Progress
+                    percent={Math.floor(loadingProgress)}
+                    showInfo={true}
+                    format={(percent) => `${Math.floor(percent)}%`}
+                    stroke="#374151"
+                    size="large"
+                    style={{ 
+                      marginBottom: "16px",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      fontSize: "16px",
+                      color: "#666",
+                      display: "block",
+                      minHeight: "24px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {currentLoadingStep}
+                  </Text>
+
+                  {/* 显示处理状态 */}
+                  <div style={{ textAlign: "center", marginTop: "16px" }}>
+                    <Text 
+                      className="questionnaire-status-indicator"
+                      style={{ 
+                        fontSize: "14px", 
+                        color: "#6b7280",
+                        background: "rgba(243, 244, 246, 0.8)",
+                        padding: "8px 16px",
+                        borderRadius: "20px",
+                        border: "1px solid #e5e7eb",
+                        display: "inline-block",
+                        transition: "all 0.3s ease"
+                      }}>
+                      需求表单状态:{" "}
+                      <span style={{
+                        color: loadingProgress === 100 ? "#10b981" : "#f59e0b",
+                        fontWeight: "600"
+                      }}>
+                        {loadingProgress === 100 ? "已完成" : "处理中"}
+                      </span>
+                    </Text>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                padding: '24px',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                marginTop: '20px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+              }}>
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: "14px",
+                    textAlign: "center",
+                    display: "block",
+                  }}
+                >
+                  我们正在根据您的需求和答案创建定制化的应用方案，请稍候片刻
+                </Text>
+              </div>
             </div>
           </Card>
         </div>
@@ -275,7 +430,7 @@ function Questionnaire() {
 
             <div className="user-input-summary">
               <Text type="secondary" size="large">
-                以下是您的需求，为了更好地创建您的应用，我们跟您明确几个问题！
+                距离您的专属应用更近一步。请回答几个核心问题，让我们更好地为您定制解决方案
               </Text>
               <Text
                 style={{
@@ -395,7 +550,7 @@ function Questionnaire() {
 
           <div className="user-input-summary">
             <Text type="secondary" size="large" style={{ color: "#000000" }}>
-              以下是您的需求，为了更好地创建您的应用，我们跟您明确几个问题！
+              距离您的专属应用更近一步。请回答几个核心问题，让我们更好地为您定制解决方案
             </Text>
             <Text
               style={{
