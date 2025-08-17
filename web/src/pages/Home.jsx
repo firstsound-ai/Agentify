@@ -125,8 +125,8 @@ function Home() {
 
   // 轮询获取状态直到问卷生成完成
   const pollRequirementStatus = async (threadId, userInput) => {
-    const maxAttempts = 30; // 最多轮询30次
-    const interval = 2000; // 每2秒轮询一次
+    const maxAttempts = 60; 
+    const interval = 2000;
     let attempts = 0;
 
     const poll = async () => {
@@ -167,7 +167,7 @@ function Home() {
                 },
               });
             }
-          }, 1500);
+          }, 1000);
           return;
         } else if (statusResult.data.status === "pending") {
           // 还在处理中，继续轮询

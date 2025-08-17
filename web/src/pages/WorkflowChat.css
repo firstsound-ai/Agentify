@@ -534,15 +534,6 @@
   }
 }
 
-/* 工作流统计信息 */
-.workflow-stats-summary {
-  margin: 12px 0;
-  padding: 12px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-}
-
 /* 步骤详情容器 */
 .workflow-step-details {
   display: flex;

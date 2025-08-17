@@ -6,7 +6,7 @@
 .top-header {
   background: white;
   border-bottom: 1px solid #e2e8f0;
-  padding: 0 24px;
+  padding: 0 12px;
   height: 56px;
   position: sticky;
   top: 0;
@@ -27,100 +27,7 @@
   align-items: center;
 }
 
-.main-layout {
-  height: calc(100vh - 64px);
-}
 
-.left-sidebar {
-  background: white;
-  border-right: 1px solid #e2e8f0;
-  width: 320px !important;
-  min-width: 320px !important;
-  max-width: 320px !important;
-}
-
-.sidebar-content {
-  padding: 24px 20px;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.nav-menu {
-  margin-bottom: 20px;
-}
-
-.nav-item {
-  padding: 0 !important;
-  border: none !important;
-  margin-bottom: 4px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.nav-item:hover {
-  background: #f8f9fa;
-}
-
-.nav-item.active {
-  background: #eef2ff;
-}
-
-.nav-item-content {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  width: 100%;
-}
-
-.nav-icon {
-  margin-right: 12px;
-  color: #64748b;
-}
-
-.nav-item.active .nav-icon {
-  color: #6c5ce7;
-}
-
-.nav-title {
-  flex: 1;
-  font-size: 14px;
-  color: #374151;
-}
-
-.nav-item.active .nav-title {
-  color: #6c5ce7;
-  font-weight: 500;
-}
-
-/* 聊天历史样式 */
-.chat-history {
-  flex: 1;
-}
-
-.chat-item {
-  padding: 0 !important;
-  border: none !important;
-  margin-bottom: 4px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.chat-item:hover {
-  background: #f8f9fa;
-}
-
-.chat-item.active {
-  background: #eef2ff;
-}
-
-.chat-item-content {
-  padding: 12px 16px;
-  width: 100%;
-}
-
-/* 主要内容区域样式 */
 .chat-content {
   background: #f8f9fa;
   padding: 0;
@@ -135,92 +42,6 @@
   padding: 24px;
 }
 
-/* 对话标题样式 */
-.chat-header {
-  background: white;
-  padding: 20px 24px;
-  border-radius: 12px 12px 0 0;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 0;
-}
-
-/* 消息容器样式 */
-.messages-container {
-  flex: 1;
-  background: white;
-  padding: 24px;
-  overflow-y: auto;
-  border-radius: 0;
-  margin-bottom: 0;
-  max-height: calc(100vh - 300px);
-}
-
-/* 消息样式 */
-.message {
-  display: flex;
-  margin-bottom: 20px;
-  animation: fadeInUp 0.3s ease-out;
-}
-
-.message.user {
-  flex-direction: row-reverse;
-}
-
-.message-avatar {
-  margin: 0 12px;
-}
-
-.message.user .message-avatar {
-  margin: 0 0 0 12px;
-}
-
-.message-content {
-  max-width: 70%;
-}
-
-.message.user .message-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.message-bubble {
-  background: #f1f3f4;
-  padding: 12px 16px;
-  border-radius: 18px;
-  position: relative;
-  word-wrap: break-word;
-}
-
-.message.user .message-bubble {
-  background: #6c5ce7;
-  color: white;
-}
-
-.message.bot .message-bubble {
-  background: #f8f9fa;
-  border: 1px solid #e2e8f0;
-}
-
-/* 输入框容器样式 */
-.chat-input-container {
-  background: white;
-  border-radius: 0 0 12px 12px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.input-card {
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  padding: 20px 24px !important;
-}
-
-.input-wrapper {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-}
 
 /* 动画效果 */
 @keyframes fadeInUp {
@@ -232,57 +53,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* 滚动条样式 */
-.sidebar-content::-webkit-scrollbar,
-.messages-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar-content::-webkit-scrollbar-track,
-.messages-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar-content::-webkit-scrollbar-thumb,
-.messages-container::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
-}
-
-.sidebar-content::-webkit-scrollbar-thumb:hover,
-.messages-container::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .left-sidebar {
-    width: 280px !important;
-    min-width: 280px !important;
-    max-width: 280px !important;
-  }
-
-  .chat-container {
-    padding: 16px;
-  }
-
-  .message-content {
-    max-width: 85%;
-  }
-
-  .header-content {
-    padding: 0 16px;
-  }
-}
-
-/* 美化滚动区域 */
-.messages-container {
-  scroll-behavior: smooth;
-}
-
-/* 列表项hover效果 */
-.semi-list-item:hover {
-  background: transparent !important;
 }
