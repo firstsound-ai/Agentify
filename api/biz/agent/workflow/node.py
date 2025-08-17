@@ -7,9 +7,7 @@ from biz.agent.workflow.prompt import EXECUTOR_SYSTEM_PROMPT, PLANNER_PROMPT
 from biz.agent.workflow.state import AgentState
 from common.utils.get_llm_model import get_llm_model
 
-# llm = get_llm_model(model_name="gemini-2.5-flash")
-llm = get_llm_model(model_name="Qwen/Qwen3-30B-A3B-Instruct-2507", temperature=0.5)
-
+llm = get_llm_model(model_name="gemini-2.5-pro", temperature=0)
 
 def tool_executor_node(state: AgentState):
     last_message = state["messages"][-1]

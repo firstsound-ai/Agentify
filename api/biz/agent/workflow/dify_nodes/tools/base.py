@@ -3,7 +3,7 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -26,12 +26,19 @@ class BaseTool(ABC):
     def get_tool_name(self) -> str:
         pass
 
-    def get_tool_output_references(self, node_id: str) -> Dict[str, str]:
-        return {
-            "text": f"#{{#{node_id}.text#}}",
-            "files": f"#{{#{node_id}.files#}}",
-            "json": f"#{{#{node_id}.json#}}",
-        }
+    # def get_tool_output_references(self, node_id: str) -> Dict[str, str]:
+    # return {
+    #     "text": f"#{{#{node_id}.text#}}",
+    #     "files": f"#{{#{node_id}.files#}}",
+    #     "json": f"#{{#{node_id}.json#}}",
+    # }
+    # FIXME: TypeError: can only concatenate list (not "dict") to list
+    def get_tool_output_references(self, node_id: str) -> List[str]:
+        return [
+            f"#{{#{node_id}.text#}}",
+            f"#{{#{node_id}.files#}}",
+            f"#{{#{node_id}.json#}}",
+        ]
 
     def load_template(self) -> Dict[str, Any]:
         if not self.template_path.exists():

@@ -37,4 +37,6 @@ EXECUTOR_SYSTEM_PROMPT = """
 
 **当前已创建节点产生的可用变量:**
 {available_variables}
+
+请你直接调用工具，不要输出任何其他内容。
 """

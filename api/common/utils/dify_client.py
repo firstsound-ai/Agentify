@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Optional
 
 import requests
 from fastapi import status
@@ -85,6 +85,24 @@ class DifyClient:
         except Exception as e:
             print(e)
             raise DifyException(ErrorCode.DIFY_CLIENT_ERROR, str(e))
+
+    def get_draft(self, app_id: str):
+        url = self._full_url(f"/apps/{app_id}/workflows/draft")
+        response = self.client.get(url)
+        if response.status_code != status.HTTP_200_OK:
+            raise DifyException(ErrorCode.DIFY_CLIENT_ERROR, response.json()["message"])
+        return response.json()
+
+    def set_draft(self, app_id: str, draft: dict, hash: Optional[str] = None):
+        url = self._full_url(f"/apps/{app_id}/workflows/draft")
+        if not hash:
+            hash = self.get_draft(app_id).get("hash")
+
+        draft["hash"] = hash
+        response = self.client.post(url, json=draft)
+        if response.status_code != status.HTTP_200_OK:
+            raise DifyException(ErrorCode.DIFY_CLIENT_ERROR, response.json()["message"])
+        return response.json()
 
 
 def get_dify_client() -> Generator[DifyClient, None, None]:
