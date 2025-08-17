@@ -89,7 +89,9 @@ class DifyClient:
     def create_app(self, app_type: str, app_name: str, app_description: str):
         created_app_result = self._create_app(app_type, app_name, app_description)
         _ = self.set_draft(
-            draft=DEFAULT_TEMPLATES[app_type], app_id=created_app_result["id"]
+            draft=DEFAULT_TEMPLATES[app_type],
+            app_id=created_app_result["id"],
+            hash=DEFAULT_TEMPLATES[app_type]["hash"],
         )
         return created_app_result
 
