@@ -98,7 +98,7 @@ async def stream_chat(
                     if output[0].content in ['update', 'end']:
                         decision = output[0].content
                         break
-                    sse_data = f"data: {json.dumps({'chunk': output[0].content}, ensure_ascii=False)}\n\n"
+                    sse_data = f"data: {json.dumps({'chunk': output[0].content}, ensure_ascii=False)}"
                     yield sse_data
 
             from dal.checkpointer import get_checkpointer
@@ -107,7 +107,7 @@ async def stream_chat(
 
             if checkpoint:
                 if decision == "end":
-                    sse_data = f"data: {json.dumps({'chunk': "No need for update."}, ensure_ascii=False)}\n\n"
+                    sse_data = f"data: {json.dumps({'chunk': "No need for update."}, ensure_ascii=False)}"
                     yield sse_data
                 else:
                     final_workflow = checkpoint["channel_values"].get("refined_workflow")
@@ -116,7 +116,7 @@ async def stream_chat(
                     if final_workflow and final_mermaid:
                         BlueprintBIZ.update_blueprint_by_thread(thread_id, final_workflow, final_mermaid)
                         print("已经更新")
-                        sse_data = f"data: {json.dumps({'chunk': "Workflow and mermaid have been updated."}, ensure_ascii=False)}\n\n"
+                        sse_data = f"data: {json.dumps({'chunk': "Workflow and mermaid have been updated."}, ensure_ascii=False)}"
                         yield sse_data
 
         except Exception as e:
@@ -127,6 +127,6 @@ async def stream_chat(
                 "error": str(e),
                 "chunk": "",
             }, ensure_ascii=False)
-            yield f"data: {error_data}\n\n"
+            yield f"data: {error_data}"
 
     return EventSourceResponse(event_generator())
