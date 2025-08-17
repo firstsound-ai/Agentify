@@ -13,7 +13,7 @@ WORKFLOW_PROMPT = ChatPromptTemplate.from_messages(
 
 你的任务是将 `[ORIGINAL_DOCUMENT]` (产品文档) 生成一份JSON格式的工作流（workflow）。
 
-要求所生成的工作流务必充分体现需求中的流程，灵活运用循环、分支等结构。
+要求所生成的工作流务必充分体现需求中的流程，灵活运用分支结构，暂不使用循环。
 
 # 规则
 
@@ -27,10 +27,6 @@ ACTION_LLM_TRANSFORM 调用LLM生成能力
 
 CONDITION_BRANCH 条件分支
 
-LOOP_START 开始循环
-
-LOOP_END 结束循环
-
 OUTPUT_FORMAT 格式化输出
 
 nodes的编号从node-001开始，按顺序编号
@@ -38,8 +34,6 @@ nodes的编号从node-001开始，按顺序编号
 遇到顺序执行中的子节点，记作node-xxx-a、node-xxx-b等
 
 遇条件分支则变成node-cond-xxx
-
-遇循环变成node-loop-start-xxx（循环开始）和 node-loop-end-xxx（循环结束）
 
 最终节点为node-final-xxx
 
@@ -205,10 +199,6 @@ ACTION_LLM_TRANSFORM 调用LLM生成能力
 
 CONDITION_BRANCH 条件分支
 
-LOOP_START 开始循环
-
-LOOP_END 结束循环
-
 OUTPUT_FORMAT 格式化输出
 
 nodes的编号从node-001开始，按顺序编号
@@ -216,8 +206,6 @@ nodes的编号从node-001开始，按顺序编号
 遇到顺序执行中的子节点，记作node-xxx-a、node-xxx-b等
 
 遇条件分支则变成node-cond-xxx
-
-遇循环变成node-loop-start-xxx（循环开始）和 node-loop-end-xxx（循环结束）
 
 最终节点为node-final-xxx
 
@@ -254,10 +242,30 @@ CHAT_PROMPT = ChatPromptTemplate.from_messages(
 
 以自然语言输出，符合日常对话流畅性，不允许使用markdown、json等格式。
 
-# 示例
-1. 好的，根据您的需求，需要增加一个条件分支，我将立马更新蓝图，请问还有别的问题吗？
+# 规则
 
-2. 关于节点3，这个步骤是检查公司是否盈利的，分成两个条件分支。
+如果用户明确说了要修改，并且清晰地描述了修改指令，例如“请在第n个节点前添加一个步骤/节点”，告诉用户收到需求且正在更新工作流步骤和蓝图。
+
+如果用户的指令十分模糊，没有明确节点位置，例如“加一个节点/删除一个节点/加一个分支”，需引导用户进一步明确需求。
+
+# 示例
+1. 
+# input
+请帮我在第3个节点前加一个预处理步骤。
+# output
+好的，已收到您的需求，正在为您更新工作流步骤和流程图。
+
+2. 
+# input
+请告诉我节点5的作用。
+# output
+关于节点5，这个步骤是检查公司是否盈利的，包含两个条件分支。
+
+3.
+# input
+请加一个规则校验步骤。
+# output
+请问您想要在哪个节点前添加规则校验步骤？
 """,
         ),
         ("user", "WORKFLOW:\n{workflow} MESSAGES:\n{messages}"),
@@ -271,7 +279,10 @@ DECISION_PROMPT = ChatPromptTemplate.from_messages(
             "system",
             """你负责判断用户的最新对话内容（MESSAGES）是否和修改工作流有关。若是，返回'update', 若否，返回'end'。仅返回update或end，不允许输出其他任何内容。
             
-            只有用户明确说了要修改，并且提到修改指令，才返回update。反之，均为end。
+            # 规则
+            只有用户明确说了要修改，并且清晰地描述了修改指令，例如“请在第n个节点前添加一个步骤/节点”，返回update。
+            
+            反之，假如用户的指令十分模糊，没有明确节点位置，例如“加一个节点/删除一个节点/加一个分支”，返回end，。
             """,
         ),
         ("user", "MESSAGES:\n{messages}"),

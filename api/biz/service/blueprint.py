@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from biz.agent.blueprint.graph import get_blueprint_workflow
+from biz.agent.workflow.graph import get_workflow_agent
 from biz.agent.blueprint.state import GraphState
 from common.dto.blueprint import BlueprintResponse, Workflow
 from common.dto.user import UserInfo
@@ -133,8 +134,11 @@ class BlueprintBIZ:
             )
 
             workflow_data = getattr(blueprint, "workflow")
+            print("wd", workflow_data)
+
             if workflow_data:
                 response.workflow = Workflow.model_validate(workflow_data)
+
 
             mermaid_code_data = getattr(blueprint, "mermaid_code")
             if mermaid_code_data:
@@ -223,3 +227,41 @@ class BlueprintBIZ:
             db.commit()
         finally:
             db.close()
+
+    def get_appid_by_thread(db: Session, user_info: UserInfo, thread_id: str):
+        requirement = RequirementDAO.get_requirement_by_id(db, thread_id)
+
+        requirement_doc_keys = [
+            "requirement_name",
+            "mission_statement",
+            "user_and_scenario",
+            "user_input",
+            "ai_output",
+            "success_criteria",
+            "boundaries_and_limitations",
+        ]
+
+        requirement_doc_json = {
+            key: getattr(requirement, key) for key in requirement_doc_keys
+        }
+
+        blueprint = BlueprintDAO.get_lastest_blueprint(db, thread_id)
+        
+        sop_json = getattr(blueprint, "workflow")
+
+        app = get_workflow_agent()
+
+        initial_input = {
+            "requirement_doc": requirement_doc_json,
+            "sop": sop_json,
+            "nodes_created": [],
+            "available_variables": [],
+            "messages": [],
+        }
+
+        config = RunnableConfig(configurable={"thread_id": thread_id})
+        final_state = app.invoke(initial_input, config=config)
+
+        print("node init")
+        print(json.dumps(final_state["nodes_created"], indent=2, ensure_ascii=False))
+        return None

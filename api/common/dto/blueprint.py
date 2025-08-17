@@ -13,7 +13,7 @@ class Edge(BaseModel):
 class Node(BaseModel):
     nodeTitle: str
     nodeType: str
-    nodeDescription: str
+    nodeDescription: Optional[str] = None
     edges: List[Edge]
 
 

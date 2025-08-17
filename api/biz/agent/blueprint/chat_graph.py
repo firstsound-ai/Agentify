@@ -12,10 +12,10 @@ from biz.agent.blueprint.prompt import (
 )
 import json
 
-# llm = get_llm_model(model_name="gemini-2.5-flash", temperature=0.5)
-llm = get_llm_model(model_name="Qwen/Qwen3-30B-A3B-Instruct-2507", temperature=0.5)
+llm = get_llm_model(model_name="gemini-2.5-pro", temperature=0.5)
+chat_llm = get_llm_model(model_name="Qwen/Qwen3-30B-A3B-Instruct-2507", temperature=0.5)
 
-chat_chain = CHAT_PROMPT | llm
+chat_chain = CHAT_PROMPT | chat_llm
 decision_chain = DECISION_PROMPT | llm
 workflow_refine_chain = WORKFLOW_REFINE_PROMPT | llm
 mermaid_chain = MERMAID_PROMPT | llm

@@ -81,5 +81,5 @@ def create_end_node(
     return {
         "node": end_node.to_dict(),
         "observation": f"已经创建了一个名为'{title}'的结束节点，包含 {len(end_outputs)} 个输出变量。",
-        "output": None,
+        "output": [],
     }

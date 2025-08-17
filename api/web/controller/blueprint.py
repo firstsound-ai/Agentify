@@ -65,6 +65,7 @@ async def stream_chat(
     request_body: PromptRequest,  # 从JSON Body获取
     db: Session = Depends(get_db),
 ):
+    print("received the request")
     latest_blueprint = BlueprintBIZ.get_latest_blueprint(db, thread_id)
     workflow = getattr(latest_blueprint, "workflow")
 
@@ -83,7 +84,6 @@ async def stream_chat(
             # 获取工作流应用
             chat_workflow = get_chat_workflow()
             config = RunnableConfig(configurable={"thread_id": thread_id})
-
             decision = None
             # 运行工作流并生成事件流
             for output in chat_workflow.stream(
@@ -93,9 +93,10 @@ async def stream_chat(
                     # 构建SSE格式数据
                     if output[0].content in ["update", "end"]:
                         decision = output[0].content
-                        break
-                    sse_data = f"data: {json.dumps({'chunk': output[0].content}, ensure_ascii=False)}\n\n"
-                    yield sse_data
+
+                    if decision is None:
+                        sse_data = f"data: {json.dumps({'chunk': output[0].content}, ensure_ascii=False)}"
+                        yield sse_data
 
             from dal.checkpointer import get_checkpointer
 
@@ -104,20 +105,23 @@ async def stream_chat(
 
             if checkpoint:
                 if decision == "end":
-                    sse_data = f"data: {json.dumps({'chunk': 'No need for update.'}, ensure_ascii=False)}\n\n"
+                    sse_data = f"data: {json.dumps({'chunk': '目前无需更新工作流。'}, ensure_ascii=False)}"
                     yield sse_data
                 else:
+                    print("开始更新")
                     final_workflow = checkpoint["channel_values"].get(
                         "refined_workflow"
                     )
                     final_mermaid = checkpoint["channel_values"].get("mermaid_code")
+
+                    print("checkpoint", checkpoint["channel_values"])
 
                     if final_workflow and final_mermaid:
                         BlueprintBIZ.update_blueprint_by_thread(
                             thread_id, final_workflow, final_mermaid
                         )
                         print("已经更新")
-                        sse_data = f"data: {json.dumps({'chunk': 'Workflow and mermaid have been updated.'}, ensure_ascii=False)}\n\n"
+                        sse_data = f"data: {json.dumps({'chunk': '工作流和流程图已更新完毕！'}, ensure_ascii=False)}"
                         yield sse_data
 
         except Exception as e:
@@ -132,6 +136,6 @@ async def stream_chat(
                 },
                 ensure_ascii=False,
             )
-            yield f"data: {error_data}\n\n"
+            yield f"data: {error_data}"
 
     return EventSourceResponse(event_generator())
