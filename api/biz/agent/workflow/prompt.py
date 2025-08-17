@@ -14,8 +14,8 @@ PLANNER_PROMPT = """
 
 你的最终输出必须是一个JSON格式的列表，包含SOP中所有节点的ID和标题，格式如下：
 [
-    {{"nodeId": "node-001", "nodeTitle": "捕获用户报告生成请求", "status": "pending"}},
-    {{"nodeId": "node-002", "nodeTitle": "解析请求并确认报告参数", "status": "pending"}},
+    {{"nodeId": "node_001", "nodeTitle": "捕获用户报告生成请求", "status": "pending"}},
+    {{"nodeId": "node_002", "nodeTitle": "解析请求并确认报告参数", "status": "pending"}},
     ...
 ]
 """

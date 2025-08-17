@@ -3,7 +3,7 @@ from typing import Generator, Optional
 import requests
 from fastapi import status
 
-from common.constants import APP_TYPES
+from common.constants import APP_TYPES, DEFAULT_TEMPLATES
 from common.enums.error_code import ErrorCode
 from common.exceptions import DifyException
 from settings import settings
@@ -56,7 +56,7 @@ class DifyClient:
         except Exception as e:
             raise DifyException(ErrorCode.DIFY_CLIENT_ERROR, str(e))
 
-    def create_app(self, app_type: str, app_name: str, app_description: str):
+    def _create_app(self, app_type: str, app_name: str, app_description: str):
         if app_type not in APP_TYPES:
             raise DifyException(
                 ErrorCode.DIFY_CLIENT_ERROR,
@@ -85,6 +85,15 @@ class DifyClient:
         except Exception as e:
             print(e)
             raise DifyException(ErrorCode.DIFY_CLIENT_ERROR, str(e))
+
+    def create_app(self, app_type: str, app_name: str, app_description: str):
+        created_app_result = self._create_app(app_type, app_name, app_description)
+        _ = self.set_draft(
+            draft=DEFAULT_TEMPLATES[app_type],
+            app_id=created_app_result["id"],
+            hash=DEFAULT_TEMPLATES[app_type]["hash"],
+        )
+        return created_app_result
 
     def get_draft(self, app_id: str):
         url = self._full_url(f"/apps/{app_id}/workflows/draft")

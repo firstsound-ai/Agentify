@@ -33,5 +33,17 @@ class BlueprintResponse(BaseModel):
     progress: str
 
 
+class DifyWorkflowResponse(BaseModel):
+    app_id: str
+    status: TaskStatus
+    nodes: Optional[Dict] = None
+    edges: Optional[Dict] = None
+
 class PromptRequest(BaseModel):
     prompt: str
+
+
+class DifyRequest(BaseModel):
+    app_name: str
+    app_description: str
+    
