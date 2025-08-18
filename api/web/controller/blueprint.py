@@ -105,105 +105,91 @@ async def stream_chat(
         import time
 
         time.sleep(3)
-        final_workflow = (
-            {
-                "workflowId": "wf_seo_blog_gen_real_001",
-                "workflowName": "自动化SEO博客生成器",
-                "startNodeId": "node_001",
-                "nodes": {
-                    "node_001": {
-                        "nodeTitle": "捕获用户输入",
-                        "nodeType": "TRIGGER_USER_INPUT",
-                        "nodeDescription": "获取关键词、可选标题、受众、语气和需规避的品牌词。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_cond_002"}
-                        ],
-                    },
-                    "node_cond_002": {
-                        "nodeTitle": "检查用户是否提供标题",
-                        "nodeType": "CONDITION_BRANCH",
-                        "nodeDescription": "判断依据：'标题'字段是否为空。",
-                        "edges": [
-                            {"sourceHandle": "onSuccess", "targetNodeId": "node_003_a"},
-                            {"sourceHandle": "onFailure", "targetNodeId": "node_003_b"},
-                        ],
-                    },
-                    "node_003_a": {
-                        "nodeTitle": "搜索以生成标题",
-                        "nodeType": "ACTION_WEB_SEARCH",
-                        "nodeDescription": "当标题为空时，使用'关键词'进行搜索，为生成标题提供上下文。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_004_a"}
-                        ],
-                    },
-                    "node_003_b": {
-                        "nodeTitle": "从标题生成关键词",
-                        "nodeType": "ACTION_LLM_TRANSFORM",
-                        "nodeDescription": "当标题已有时，从'标题'中提炼出核心搜索短语。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_005"}
-                        ],
-                    },
-                    "node_004_a": {
-                        "nodeTitle": "生成SEO优化标题",
-                        "nodeType": "ACTION_LLM_TRANSFORM",
-                        "nodeDescription": "基于搜索结果，为用户的'关键词'生成一个新标题。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_005"}
-                        ],
-                    },
-                    "node_005": {
-                        "nodeTitle": "生成最终搜索语句",
-                        "nodeType": "ACTION_LLM_TRANSFORM",
-                        "nodeDescription": "融合已有信息（用户标题或生成标题）和'受众'，生成一个用于深度研究的、更精确的搜索查询。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_006"}
-                        ],
-                    },
-                    "node_006": {
-                        "nodeTitle": "为文章内容进行深度搜索",
-                        "nodeType": "ACTION_WEB_SEARCH",
-                        "nodeDescription": "使用生成的最终搜索语句执行Google搜索，获取权威信息。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_007"}
-                        ],
-                    },
-                    "node_007": {
-                        "nodeTitle": "生成文章大纲",
-                        "nodeType": "ACTION_LLM_TRANSFORM",
-                        "nodeDescription": "基于深度搜索结果，并结合全部用户输入，生成详细的文章大纲。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_008"}
-                        ],
-                    },
-                    "node_008": {
-                        "nodeTitle": "撰写文章引言",
-                        "nodeType": "ACTION_LLM_TRANSFORM",
-                        "nodeDescription": "根据大纲，独立生成文章的引言部分。",
-                        "edges": [
-                            {"sourceHandle": "default", "targetNodeId": "node_009"}
-                        ],
-                    },
-                    "node_009": {
-                        "nodeTitle": "撰写文章主体",
-                        "nodeType": "ACTION_LLM_TRANSFORM",
-                        "nodeDescription": "根据大纲，独立生成文章的主体部分。",
-                        "edges": [
-                            {
-                                "sourceHandle": "default",
-                                "targetNodeId": "node_final_010",
-                            }
-                        ],
-                    },
-                    "node_final_010": {
-                        "nodeTitle": "整合内容并格式化输出",
-                        "nodeType": "OUTPUT_FORMAT",
-                        "nodeDescription": "将引言和主体部分合并，最终输出为一篇完整的Markdown格式文章。",
-                        "edges": [],
-                    },
+        final_workflow = {
+            "workflowId": "wf_seo_blog_gen_real_001",
+            "workflowName": "自动化SEO博客生成器",
+            "startNodeId": "node_001",
+            "nodes": {
+                "node_001": {
+                    "nodeTitle": "捕获用户输入",
+                    "nodeType": "TRIGGER_USER_INPUT",
+                    "nodeDescription": "获取关键词、可选标题、受众、语气和需规避的品牌词。",
+                    "edges": [
+                        {"sourceHandle": "default", "targetNodeId": "node_cond_002"}
+                    ],
+                },
+                "node_cond_002": {
+                    "nodeTitle": "检查用户是否提供标题",
+                    "nodeType": "CONDITION_BRANCH",
+                    "nodeDescription": "判断依据：'标题'字段是否为空。",
+                    "edges": [
+                        {"sourceHandle": "onSuccess", "targetNodeId": "node_003_a"},
+                        {"sourceHandle": "onFailure", "targetNodeId": "node_003_b"},
+                    ],
+                },
+                "node_003_a": {
+                    "nodeTitle": "搜索以生成标题",
+                    "nodeType": "ACTION_WEB_SEARCH",
+                    "nodeDescription": "当标题为空时，使用'关键词'进行搜索，为生成标题提供上下文。",
+                    "edges": [
+                        {"sourceHandle": "default", "targetNodeId": "node_004_a"}
+                    ],
+                },
+                "node_003_b": {
+                    "nodeTitle": "从标题生成关键词",
+                    "nodeType": "ACTION_LLM_TRANSFORM",
+                    "nodeDescription": "当标题已有时，从'标题'中提炼出核心搜索短语。",
+                    "edges": [{"sourceHandle": "default", "targetNodeId": "node_005"}],
+                },
+                "node_004_a": {
+                    "nodeTitle": "生成SEO优化标题",
+                    "nodeType": "ACTION_LLM_TRANSFORM",
+                    "nodeDescription": "基于搜索结果，为用户的'关键词'生成一个新标题。",
+                    "edges": [{"sourceHandle": "default", "targetNodeId": "node_005"}],
+                },
+                "node_005": {
+                    "nodeTitle": "生成最终搜索语句",
+                    "nodeType": "ACTION_LLM_TRANSFORM",
+                    "nodeDescription": "融合已有信息（用户标题或生成标题）和'受众'，生成一个用于深度研究的、更精确的搜索查询。",
+                    "edges": [{"sourceHandle": "default", "targetNodeId": "node_006"}],
+                },
+                "node_006": {
+                    "nodeTitle": "为文章内容进行深度搜索",
+                    "nodeType": "ACTION_WEB_SEARCH",
+                    "nodeDescription": "使用生成的最终搜索语句执行Google搜索，获取权威信息。",
+                    "edges": [{"sourceHandle": "default", "targetNodeId": "node_007"}],
+                },
+                "node_007": {
+                    "nodeTitle": "生成文章大纲",
+                    "nodeType": "ACTION_LLM_TRANSFORM",
+                    "nodeDescription": "基于深度搜索结果，并结合全部用户输入，生成详细的文章大纲。",
+                    "edges": [{"sourceHandle": "default", "targetNodeId": "node_008"}],
+                },
+                "node_008": {
+                    "nodeTitle": "撰写文章引言",
+                    "nodeType": "ACTION_LLM_TRANSFORM",
+                    "nodeDescription": "根据大纲，独立生成文章的引言部分。",
+                    "edges": [{"sourceHandle": "default", "targetNodeId": "node_009"}],
+                },
+                "node_009": {
+                    "nodeTitle": "撰写文章主体",
+                    "nodeType": "ACTION_LLM_TRANSFORM",
+                    "nodeDescription": "根据大纲，独立生成文章的主体部分。",
+                    "edges": [
+                        {
+                            "sourceHandle": "default",
+                            "targetNodeId": "node_final_010",
+                        }
+                    ],
+                },
+                "node_final_010": {
+                    "nodeTitle": "整合内容并格式化输出",
+                    "nodeType": "OUTPUT_FORMAT",
+                    "nodeDescription": "将引言和主体部分合并，最终输出为一篇完整的Markdown格式文章。",
+                    "edges": [],
                 },
             },
-        )
+        }
         final_mermaid = """graph TD
     node001["node_001: 捕获用户输入<br>(TRIGGER_USER_INPUT)"]
     nodeCond002{{"node_cond_002: 检查用户是否提供标题<br>(CONDITION_BRANCH)<br>判断依据：'标题'字段是否为空。"}}
