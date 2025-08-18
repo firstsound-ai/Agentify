@@ -331,7 +331,7 @@ class BlueprintBIZ:
 
             print("result", result)
 
-            if result['result'] != "sucess":
+            if result['result'] != "success":
                 raise GeneralException(
                     ErrorCode.DIFY_CLIENT_ERROR, "应用更新失败"
                 )

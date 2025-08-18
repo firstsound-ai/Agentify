@@ -36,8 +36,8 @@ class BlueprintResponse(BaseModel):
 class DifyWorkflowResponse(BaseModel):
     app_id: str
     status: TaskStatus
-    nodes: Optional[Dict] = None
-    edges: Optional[Dict] = None
+    nodes: Optional[List] = None
+    edges: Optional[List] = None
 
 class PromptRequest(BaseModel):
     prompt: str
