@@ -48,6 +48,13 @@ function Workflow() {
   const [blueprintStatus, setBlueprintStatus] = useState("pending");
   const [mermaidCode, setMermaidCode] = useState("");
   const [isWorkflowLoading, setIsWorkflowLoading] = useState(false); // 动态工作流加载状态
+  
+  // 新增状态：工作流创建相关
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [appId, setAppId] = useState("");
+  const [isCreatingApp, setIsCreatingApp] = useState(false);
+  const [appStatus, setAppStatus] = useState("");
+  const [finalWorkflowData, setFinalWorkflowData] = useState(null);
   const pollingRef = useRef(null);
   const workflowPollingRef = useRef(null); // 用于聊天后的工作流轮询
   const [messages, setMessages] = useState([]);
@@ -98,6 +105,94 @@ function Workflow() {
     // 发送SSE请求
     sendChatMessageSSE(content, aiMessageId);
   }, [threadId]);
+
+  // 确认使用工作流
+  const handleConfirmWorkflow = async () => {
+    setIsConfirming(true);
+    
+    try {
+      console.log("获取 app_id，thread_id:", threadId);
+      
+      // 第一步：获取 app_id
+      const appIdResponse = await request.get(getApiUrl(`/api/workflow/appid/${threadId}`));
+      console.log("获取 app_id 响应:", appIdResponse);
+      
+      if (appIdResponse.code === 0 && appIdResponse.data?.app_id) {
+        const appIdValue = appIdResponse.data.app_id;
+        setAppId(appIdValue);
+        setIsCreatingApp(true);
+        setAppStatus("pending");
+        
+        // 开始轮询工作流状态
+        pollWorkflowStatus(appIdValue);
+      } else {
+        throw new Error(appIdResponse.message || "获取 app_id 失败");
+      }
+    } catch (error) {
+      console.error("确认工作流失败:", error);
+      setIsConfirming(false);
+      // 这里可以添加错误提示
+    }
+  };
+
+  // 轮询工作流状态
+  const pollWorkflowStatus = async (appIdValue) => {
+    const maxAttempts = 60; // 最多轮询60次
+    const interval = 3000; // 每3秒轮询一次
+    let attempts = 0;
+
+    const poll = async () => {
+      attempts++;
+      console.log(`轮询工作流状态 - 第 ${attempts} 次`);
+
+      try {
+        const statusResponse = await request.get(getApiUrl(`/api/workflow/status/${appIdValue}`));
+        console.log("工作流状态响应:", statusResponse);
+
+        if (statusResponse.code === 0 && statusResponse.data) {
+          const data = statusResponse.data;
+          setAppStatus(data.status);
+
+          if (data.status === "completed" && data.nodes && data.edges) {
+            // 工作流创建完成
+            setFinalWorkflowData({
+              app_id: data.app_id,
+              nodes: data.nodes,
+              edges: data.edges,
+            });
+            setIsCreatingApp(false);
+            setIsConfirming(false);
+            console.log("工作流创建完成:", data);
+            return;
+          }
+        }
+
+        // 继续轮询或超时处理
+        if (attempts < maxAttempts) {
+          setTimeout(poll, interval);
+        } else {
+          console.error("工作流创建超时");
+          setIsCreatingApp(false);
+          setIsConfirming(false);
+          setAppStatus("timeout");
+        }
+      } catch (error) {
+        console.error("轮询工作流状态失败:", error);
+        
+        // 继续轮询，直到达到最大次数
+        if (attempts < maxAttempts) {
+          setTimeout(poll, interval);
+        } else {
+          setIsCreatingApp(false);
+          setIsConfirming(false);
+          setAppStatus("error");
+        }
+      }
+    };
+
+    // 开始轮询
+    poll();
+  };
 
   // SSE聊天请求函数
   const sendChatMessageSSE = useCallback(async (content, messageId) => {
@@ -685,6 +780,246 @@ function Workflow() {
     );
   }
 
+  // 工作流创建中的加载页面
+  if (isCreatingApp) {
+    return (
+      <Content className="workflow-page-content">
+        <div className="workflow-page-container">
+          <Card className="workflow-loading-card">
+            <div className="workflow-loading-content">
+              <div className="workflow-loading-header">
+                <Button
+                  icon={<IconArrowLeft />}
+                  theme="borderless"
+                  onClick={() => {
+                    setIsCreatingApp(false);
+                    setIsConfirming(false);
+                  }}
+                  className="workflow-back-button"
+                >
+                  返回工作流预览
+                </Button>
+              </div>
+
+              <div className="workflow-loading-animation">
+                <Spin size="large" />
+              </div>
+
+              <div className="workflow-progress-section">
+                <Title
+                  heading={3}
+                  style={{
+                    textAlign: "center",
+                    margin: "0 0 32px 0",
+                    color: "#1a202c",
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    background: "linear-gradient(135deg, #1a202c 0%, #374151 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  正在创建您的专属APP
+                </Title>
+
+                <div className="workflow-progress-container">
+                  <Progress
+                    percent={appStatus === "completed" ? 100 : 60}
+                    showInfo={true}
+                    format={(percent) => `${Math.floor(percent)}%`}
+                    stroke="#374151"
+                    size="large"
+                    style={{ marginBottom: "16px" }}
+                  />
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      fontSize: "16px",
+                      color: "#666",
+                      display: "block",
+                      minHeight: "24px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {appStatus === "pending" ? "正在生成工作流节点和连接..." : "处理中，请稍候..."}
+                  </Text>
+
+                  {/* 显示应用状态 */}
+                  <div style={{ textAlign: "center", marginTop: "16px" }}>
+                    <Text 
+                      className="workflow-status-indicator"
+                      style={{ 
+                        fontSize: "14px", 
+                        color: "#6b7280",
+                        background: "rgba(243, 244, 246, 0.8)",
+                        padding: "8px 16px",
+                        borderRadius: "20px",
+                        border: "1px solid #e5e7eb",
+                        display: "inline-block",
+                        transition: "all 0.3s ease"
+                      }}>
+                      应用状态:{" "}
+                      <span style={{
+                        color: appStatus === "completed" ? "#10b981" : "#f59e0b",
+                        fontWeight: "600"
+                      }}>
+                        {appStatus === "pending"
+                          ? "创建中"
+                          : appStatus === "completed"
+                            ? "已完成"
+                            : appStatus || "处理中"}
+                      </span>
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </Content>
+    );
+  }
+
+  // 工作流创建完成页面
+  if (finalWorkflowData) {
+    return (
+      <Content className="workflow-page-content">
+        <div className="workflow-page-container">
+          <Card style={{
+            width: '100%',
+            maxWidth: '600px',
+            borderRadius: '24px',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(226, 232, 240, 0.6)',
+            background: 'rgba(255, 255, 255, 0.95)'
+          }}>
+            <div style={{
+              textAlign: 'center'
+            }}>
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px',
+                  fontSize: '32px',
+                  color: 'white'
+                }}>
+                  ✓
+                </div>
+
+                <Title
+                  heading={3}
+                  style={{
+                    textAlign: "center",
+                    margin: "0 0 16px 0",
+                    color: "#1a202c",
+                    fontSize: "24px",
+                    fontWeight: "700",
+                  }}
+                >
+                  工作流创建成功！
+                </Title>
+
+                <Text
+                  style={{
+                    textAlign: "center",
+                    fontSize: "16px",
+                    color: "#666",
+                    display: "block",
+                    lineHeight: "1.5",
+                    marginBottom: "16px",
+                  }}
+                >
+                  您的专属工作流已成功创建，包含 {finalWorkflowData.nodes?.length || 0} 个节点
+                </Text>
+
+                <Text
+                  style={{
+                    textAlign: "center",
+                    fontSize: "14px",
+                    color: "#999",
+                    display: "block",
+                  }}
+                >
+                  应用ID: {finalWorkflowData.app_id}
+                </Text>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                gap: '16px',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => {
+                    console.log("创建网页 - 待实现");
+                    // TODO: 实现创建网页功能
+                  }}
+                  style={{
+                    minWidth: '140px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#374151'
+                  }}
+                >
+                  为我创建专属应用
+                </Button>
+
+                <Button
+                  size="large"
+                  onClick={() => {
+                    console.log("创建配置文件 - 待实现");
+                    // TODO: 实现创建配置文件功能
+                  }}
+                  style={{
+                    minWidth: '140px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#374151'
+                  }}
+                >
+                  导出配置文件
+                </Button>
+              </div>
+
+              <div style={{
+                marginTop: '32px',
+                padding: '20px',
+                background: '#f8fafc',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: "14px",
+                    textAlign: "center",
+                    display: "block",
+                  }}
+                >
+                  您可以选择创建应用或导出配置文件进行进一步的开发和部署
+                </Text>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </Content>
+    );
+  }
+
   // 工作流展示 - 左右布局
   return (
     <Content className="workflow-page-content">
@@ -716,14 +1051,11 @@ function Workflow() {
           <div className="workflow-header-actions">
             <Button
               type="primary"
-              // size="large"
-              onClick={() => {
-                console.log("开始使用工作流", workflowData);
-                // 这里可以添加确定使用工作流的逻辑
-              }}
+              loading={isConfirming}
+              onClick={handleConfirmWorkflow}
               className="workflow-use-button"
             >
-              确定使用该工作流
+              {isConfirming ? "正在确认..." : "确定使用该工作流"}
             </Button>
           </div>
         </div>
