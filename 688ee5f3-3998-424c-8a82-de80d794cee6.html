@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO 博客生成器</title>
+
+    <!-- 引入 Marked.js 用于 Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        /* --- 全局和布局 --- */
+        body {
+            margin: 0;
+            background-color: #f9fafb;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+
+        .seo-generator-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .page-header p {
+            font-size: 1.125rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2.5rem;
+        }
+
+        /* --- 表单容器样式 --- */
+        .form-container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        /* --- 按钮样式 --- */
+        button {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background-color: #3b82f6;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #2563eb;
+        }
+
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* --- 输出容器样式 --- */
+        .output-container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            overflow-wrap: break-word;
+        }
+
+        .output-container h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+
+        .output-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #9ca3af;
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .output-content {
+            min-height: 300px;
+            line-height: 1.7;
+            color: #374151;
+        }
+
+        /* --- 错误与加载动画 --- */
+        .error-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            display: none;
+            /* 默认隐藏 */
+        }
+
+        .spinner {
+            width: 1.2em;
+            height: 1.2em;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- 响应式布局 --- */
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="seo-generator-page">
+        <header class="page-header">
+            <h1>SEO 博客生成器</h1>
+            <p>输入核心要素，AI 将为您生成一篇高质量的 SEO 优化博客文章。</p>
+        </header>
+
+        <main class="main-content">
+            <!-- 左侧：输入表单 -->
+            <div class="form-container">
+                <form id="blog-form">
+                    <div class="form-group">
+                        <label for="keyword">关键词 (keyword)</label>
+                        <input id="keyword" type="text" placeholder="例如：人工智能, 前端开发" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">标题 (title)</label>
+                        <input id="title" type="text" placeholder="例如：AI 如何赋能下一代前端开发" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="audience">受众 (audience)</label>
+                        <input id="audience" type="text" placeholder="例如：前端开发初学者, 项目经理" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brands_to_avoid">需要避免的词/品牌 (brands_to_avoid)</label>
+                        <textarea id="brands_to_avoid" rows="3" placeholder="例如：避免提及竞品 A, 避免使用'绝对'等词"
+                            required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tone">语气 (tone)</label>
+                        <select id="tone" required>
+                            <option value="专业严谨">专业严谨</option>
+                            <option value="友好亲切" selected>友好亲切</option>
+                            <option value="幽默风趣">幽默风趣</option>
+                            <option value="鼓舞人心">鼓舞人心</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submit-button">开始生成博客</button>
+                </form>
+                <div id="error-message" class="error-message"></div>
+            </div>
+
+            <!-- 右侧：输出结果 -->
+            <div class="output-container">
+                <h2>生成结果</h2>
+                <div id="output-content" class="output-content">
+                    <div class="output-placeholder">
+                        <p>AI 生成的内容将显示在这里...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 配置项 (已根据您提供的信息填写) ---
+        const DIFY_API_URL = 'https://dify.qiyuanchen.top/v1/workflows/run';
+        const DIFY_API_KEY = 'app-XSYFt5mMo7LVvrZHY5tsL2XD';
+
+        // --- 获取 DOM 元素 ---
+        const blogForm = document.getElementById('blog-form');
+        const submitButton = document.getElementById('submit-button');
+        const outputContent = document.getElementById('output-content');
+        const errorMessageDiv = document.getElementById('error-message');
+
+        // --- 表单提交事件监听 ---
+        blogForm.addEventListener('submit', async function (event) {
+            event.preventDefault(); // 阻止表单默认提交行为
+
+            // 1. 更新UI为加载状态
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner"></span> 正在生成中...';
+            errorMessageDiv.style.display = 'none';
+            outputContent.innerHTML = '';
+
+            try {
+                // 2. 构造请求体 (字段名与截图完全对应)
+                const requestBody = {
+                    inputs: {
+                        "keyword": document.getElementById('keyword').value,
+                        "title": document.getElementById('title').value,
+                        "audience": document.getElementById('audience').value,
+                        "brands_to_avoid": document.getElementById('brands_to_avoid').value,
+                        "tone": document.getElementById('tone').value,
+                    },
+                    response_mode: 'blocking', // 改为 blocking 模式，一次性返回
+                    user: 'dify-frontend-user-001', // 标识用户
+                };
+
+                // 3. 发送 Fetch 请求
+                const response = await fetch(DIFY_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${DIFY_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP 错误! 状态码: ${response.status}`);
+                }
+
+                // 4. FIX: 直接解析完整的 JSON 响应
+                const result = await response.json();
+
+                // FIX: 根据新的返回结构，从 result.data.outputs.output 获取内容
+                const generatedText = result.data && result.data.outputs && result.data.outputs.output;
+
+                if (generatedText) {
+                    // 使用 marked 将 Markdown 文本转换为 HTML 并显示
+                    outputContent.innerHTML = marked.parse(generatedText);
+                } else {
+                    // 提供更详细的错误信息
+                    console.error("Unexpected API response structure:", result);
+                    throw new Error("API 返回的数据结构不正确，或缺少 'output' 字段。");
+                }
+
+            } catch (err) {
+                // 5. 错误处理
+                console.error('API 请求失败:', err);
+                errorMessageDiv.textContent = `发生错误：${err.message}`;
+                errorMessageDiv.style.display = 'block';
+                outputContent.innerHTML = `
+          <div class="output-placeholder">
+            <p>生成失败，请检查浏览器控制台 (F12) 的错误信息。</p>
+          </div>`;
+            } finally {
+                // 6. 恢复UI状态
+                submitButton.disabled = false;
+                submitButton.innerHTML = '开始生成博客';
+            }
+        });
+    </script>
+
+</body>
+
+</html>
