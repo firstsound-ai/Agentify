@@ -26,10 +26,11 @@ def get_appid_by_thread(
     app_name = "myapp"
     app_description = "a great app"
 
-    response = client.create_app(app_type, app_name, app_description)
-    app_id = response['id']
-    BlueprintBIZ.create_node(db, app_id, app_type, app_name, app_description, 
-                             background_tasks, user_info, thread_id)
+    # response = client.create_app(app_type, app_name, app_description)
+    # app_id = response['id']
+    app_id = "d569fed6-c4f3-4e64-8066-e1d6c4e56f22"
+    # BlueprintBIZ.create_node(db, app_id, app_type, app_name, app_description, 
+    #                          background_tasks, user_info, thread_id)
     return Result.success(data={"app_id": app_id})
 
 @router.get("/status/{app_id}")

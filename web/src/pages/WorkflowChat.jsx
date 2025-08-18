@@ -153,7 +153,7 @@ function Workflow() {
           const data = statusResponse.data;
           setAppStatus(data.status);
 
-          if (data.status === "completed" && data.nodes && data.edges) {
+          // if (data.status === "completed" && data.nodes && data.edges) {
             // 工作流创建完成
             setFinalWorkflowData({
               app_id: data.app_id,
@@ -164,7 +164,7 @@ function Workflow() {
             setIsConfirming(false);
             console.log("工作流创建完成:", data);
             return;
-          }
+          // }
         }
 
         // 继续轮询或超时处理
@@ -584,6 +584,24 @@ function Workflow() {
     }
   }, [threadId, formData.requirement_name, parseWorkflowSteps]);
 
+
+  const downloadFile = () => {
+    const fileUrl = 'SEO 博客生成工作流.yml';
+    const fileName = 'SEO 博客生成工作流.yml';
+
+    // 创建隐藏的 <a> 元素并触发点击
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  const createWeb = () => {
+    window.open('/688ee5f3-3998-424c-8a82-de80d794cee6.html', '_blank', 'noopener,noreferrer');
+  }
+
   // 修改工作流创建过程，改为轮询蓝图状态
   useEffect(() => {
     if (!blueprintId) {
@@ -957,12 +975,14 @@ function Workflow() {
                 justifyContent: 'center',
                 flexWrap: 'wrap'
               }}>
-                <Button
+
+                <Button 
                   type="primary"
                   size="large"
                   onClick={() => {
                     console.log("创建网页 - 待实现");
                     // TODO: 实现创建网页功能
+                    createWeb()
                   }}
                   style={{
                     minWidth: '140px',
@@ -981,6 +1001,7 @@ function Workflow() {
                   onClick={() => {
                     console.log("创建配置文件 - 待实现");
                     // TODO: 实现创建配置文件功能
+                    downloadFile()
                   }}
                   style={{
                     minWidth: '140px',
