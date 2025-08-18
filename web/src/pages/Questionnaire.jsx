@@ -61,7 +61,11 @@ function Questionnaire() {
                 无法获取问卷数据，请返回重试
               </Text>
               <div style={{ textAlign: "center" }}>
-                <Button onClick={() => navigate("/")} type="primary">
+                <Button 
+                  onClick={() => navigate("/")} 
+                  type="primary"
+                  className="questionnaire-back-button"
+                >
                   返回首页
                 </Button>
               </div>
@@ -283,14 +287,9 @@ function Questionnaire() {
                   icon={<IconArrowLeft />}
                   theme="borderless"
                   onClick={() => navigate("/")}
+                  className="questionnaire-back-button"
                   style={{
-                    background: 'rgba(248, 250, 252, 0.8)',
-                    border: '1px solid rgba(203, 213, 224, 0.6)',
-                    borderRadius: '12px',
-                    color: '#475569',
-                    fontWeight: '500',
                     padding: '8px 16px',
-                    transition: 'all 0.3s ease'
                   }}
                 >
                   返回首页
@@ -400,7 +399,8 @@ function Questionnaire() {
               icon={<IconArrowLeft />}
               theme="borderless"
               onClick={() => navigate("/")}
-              style={{ marginBottom: "8px", color: "#000000" }}
+              className="questionnaire-back-button"
+              style={{ marginBottom: "8px" }}
             >
               返回首页
             </Button>
@@ -520,7 +520,8 @@ function Questionnaire() {
             icon={<IconArrowLeft />}
             theme="borderless"
             onClick={() => navigate("/")}
-            style={{ marginBottom: "8px", color: "#000000" }}
+            className="questionnaire-back-button"
+            style={{ marginBottom: "8px" }}
           >
             返回首页
           </Button>
