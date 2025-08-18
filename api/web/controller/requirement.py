@@ -18,9 +18,10 @@ def create_requirement(
     user_info: UserInfo = Depends(get_user_info),
     db: Session = Depends(get_db),
 ):
-    thread_id = RequirementBIZ.create_requirement(
-        db, initial_requirement, user_info, background_tasks
-    )
+    # thread_id = RequirementBIZ.create_requirement(
+    #     db, initial_requirement, user_info, background_tasks
+    # )
+    thread_id = "f51c98bc-e776-410b-8db6-189007479d7f"
     return Result.success(data={"thread_id": thread_id})
 
 
