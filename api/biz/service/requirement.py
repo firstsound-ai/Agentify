@@ -194,12 +194,12 @@ class RequirementBIZ:
             db.commit()
 
             # 启动后台任务继续处理
-            background_tasks.add_task(
-                RequirementBIZ._continue_requirement_task,
-                thread_id,
-                user_answers.answers,
-                user_answers.additional_requirements,
-            )
+            # background_tasks.add_task(
+            #     RequirementBIZ._continue_requirement_task,
+            #     thread_id,
+            #     user_answers.answers,
+            #     user_answers.additional_requirements,
+            # )
 
             return {"message": "答案已提交，正在生成最终文档..."}
 
