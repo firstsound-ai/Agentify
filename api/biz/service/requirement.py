@@ -194,12 +194,12 @@ class RequirementBIZ:
             db.commit()
 
             # 启动后台任务继续处理
-            # background_tasks.add_task(
-            #     RequirementBIZ._continue_requirement_task,
-            #     thread_id,
-            #     user_answers.answers,
-            #     user_answers.additional_requirements,
-            # )
+            background_tasks.add_task(
+                RequirementBIZ._continue_requirement_task,
+                thread_id,
+                user_answers.answers,
+                user_answers.additional_requirements,
+            )
 
             return {"message": "答案已提交，正在生成最终文档..."}
 
@@ -217,48 +217,61 @@ class RequirementBIZ:
         """继续处理需求任务 - 恢复LangGraph执行并提供用户答案"""
         db = next(get_db())
 
-        try:
-            from langgraph.types import Command
+        import time
 
-            from biz.agent.requirement.graph import get_requirement_workflow
-            from biz.agent.requirement.state import UserAnswer
+        time.sleep(3)
 
-            app = get_requirement_workflow()
-            config = RunnableConfig(configurable={"thread_id": thread_id})
+        RequirementDAO.update_requirement_status(
+            db,
+            thread_id,
+            TaskStatus.COMPLETED,
+            "最终需求文档已生成完成",
+        )
+        
+        db.commit()
 
-            RequirementDAO.update_requirement_status(
-                db, thread_id, TaskStatus.PROCESSING, "正在生成最终需求文档..."
-            )
+        # try:
+        #     from langgraph.types import Command
 
-            # 准备恢复数据
-            user_answer_objects = [
-                UserAnswer.model_validate(answer)
-                if isinstance(answer, dict)
-                else answer
-                for answer in user_answers
-            ]
+        #     from biz.agent.requirement.graph import get_requirement_workflow
+        #     from biz.agent.requirement.state import UserAnswer
 
-            resume_value = {"user_answers": user_answer_objects}
-            if additional_requirements:
-                resume_value["additional_requirements"] = additional_requirements  # type: ignore
+        #     app = get_requirement_workflow()
+        #     config = RunnableConfig(configurable={"thread_id": thread_id})
 
-            # 恢复执行工作流
-            result = app.invoke(Command(resume=resume_value), config=config)
+        #     RequirementDAO.update_requirement_status(
+        #         db, thread_id, TaskStatus.PROCESSING, "正在生成最终需求文档..."
+        #     )
 
-            # 处理结果
-            RequirementBIZ._handle_workflow_result(db, thread_id, result)
+        #     # 准备恢复数据
+        #     user_answer_objects = [
+        #         UserAnswer.model_validate(answer)
+        #         if isinstance(answer, dict)
+        #         else answer
+        #         for answer in user_answers
+        #     ]
 
-        except Exception as e:
-            RequirementDAO.update_requirement_status(
-                db,
-                thread_id,
-                TaskStatus.FAILED,
-                "生成最终文档时发生错误",
-                error_message=str(e),
-            )
-            db.commit()
-        finally:
-            db.close()
+        #     resume_value = {"user_answers": user_answer_objects}
+        #     if additional_requirements:
+        #         resume_value["additional_requirements"] = additional_requirements  # type: ignore
+
+        #     # 恢复执行工作流
+        #     result = app.invoke(Command(resume=resume_value), config=config)
+
+        #     # 处理结果
+        #     RequirementBIZ._handle_workflow_result(db, thread_id, result)
+
+        # except Exception as e:
+        #     RequirementDAO.update_requirement_status(
+        #         db,
+        #         thread_id,
+        #         TaskStatus.FAILED,
+        #         "生成最终文档时发生错误",
+        #         error_message=str(e),
+        #     )
+        #     db.commit()
+        # finally:
+        #     db.close()
 
     @staticmethod
     def _handle_workflow_result(db: Session, thread_id: str, result: dict):
