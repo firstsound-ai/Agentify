@@ -9,3 +9,7 @@ https://www.bilibili.com/video/BV1oTY4zME8T
 ## TODO
 
 项目还在快速迭代/优化中
+
+## 交流群
+
+![](wx.jpg)
