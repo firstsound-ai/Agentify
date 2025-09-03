@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from langchain_core.tools import tool
 
@@ -9,34 +9,30 @@ from .type import VariableReference
 
 @tool
 def create_variable_aggregator_node(
-    node_id: str,
-    x_pos: int,
-    y_pos: int,
-    variables: Optional[List[Dict[str, Any]]] = None,
-    output_type: str = "string",
-    title: str = "变量聚合器",
-    desc: str = "将多路分支的变量聚合为一个变量",
+    node_id: Annotated[str, "节点的唯一标识符 (例如: 'aggregator_1')。"],
+    x_pos: Annotated[int, "节点在画布上的X坐标。"],
+    y_pos: Annotated[int, "节点在画布上的Y坐标。"],
+    variables: Annotated[
+        Optional[List[Dict[str, Any]]],
+        "要聚合的变量列表。每个变量包含:\n\
+- variable: 变量名称，用于标识聚合后的变量\n\
+- value: 变量引用字符串，例如 '{{#llm_node_1.text#}}' 或 '{{#previous_node.result#}}'\n\
+- value_type: 值类型，支持 'string', 'number', 'object', 'array[string]', 'array[number]', 'array[object]'\n\
+示例: [{'variable': 'llm1_output', 'value': '{{#llm_node_1.text#}}', 'value_type': 'string'}",
+    ] = None,
+    output_type: Annotated[
+        str,
+        "聚合后的输出类型。支持 'string', 'number', 'object', 'array' 等。默认为 'string'。",
+    ] = "string",
+    title: Annotated[str, "节点的显示标题。默认为 '变量聚合器'。"] = "变量聚合器",
+    desc: Annotated[
+        str, "节点的可选描述信息。默认为 '将多路分支的变量聚合为一个变量'。"
+    ] = "将多路分支的变量聚合为一个变量",
 ) -> Dict[str, Any]:
     """
     在工作流中创建一个变量聚合器节点。
     当需要将多个分支的输出结果聚合为一个统一的变量时使用此工具，
     确保下游节点可以通过统一的变量引用来访问不同分支的结果。
-
-    Args:
-        node_id (str): 节点的唯一标识符 (例如: "aggregator_1")。
-        x_pos (int): 节点在画布上的X坐标。
-        y_pos (int): 节点在画布上的Y坐标。
-        variables (List[Dict[str, Any]], optional): 要聚合的变量列表。每个变量包含:
-            - variable: 变量名称，用于标识聚合后的变量
-            - value: 变量引用字符串，例如 "{{#llm_node_1.text#}}" 或 "{{#previous_node.result#}}"
-            - value_type: 值类型，支持 "string", "number", "object", "array[string]", "array[number]", "array[object]"
-            示例: [{"variable": "llm1_output", "value": "{{#llm_node_1.text#}}", "value_type": "string"}]
-        output_type (str, optional): 聚合后的输出类型。支持 "string", "number", "object", "array", etc。默认为 "string"。
-        title (str, optional): 节点的显示标题。默认为 "变量聚合器"。
-        desc (str, optional): 节点的可选描述信息。默认为 "将多路分支的变量聚合为一个变量"。
-
-    Returns:
-        Dict[str, Any]: 代表该变量聚合器节点的字典结构，可用于工作流编排。
     """
     if variables is None:
         variables = []

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from langchain_core.tools import tool
 
@@ -10,56 +10,43 @@ from .type import AuthConfig, HTTPBody, HTTPRetryConfig, HTTPTimeout
 # TODO: 更复杂的情况，需要用户填写
 @tool
 def create_http_request_node(
-    node_id: str,
-    x_pos: int,
-    y_pos: int,
-    url: str,
-    method: str = "GET",
-    title: str = "HTTP 请求",
-    desc: str = "发送HTTP请求并获取响应",
-    headers: str = "",
-    params: str = "",
-    authorization_type: str = "no-auth",
+    node_id: Annotated[str, "节点的唯一标识符 (例如: 'http_request_1')。"],
+    x_pos: Annotated[int, "节点在画布上的X坐标。"],
+    y_pos: Annotated[int, "节点在画布上的Y坐标。"],
+    url: Annotated[
+        str,
+        "请求的目标URL。可以包含变量引用，例如 'https://api.example.com/users/{{#user_node.user_id#}}'",
+    ],
+    method: Annotated[
+        str,
+        "HTTP请求方法。支持 'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'。",
+    ] = "GET",
+    title: Annotated[str, "节点的显示标题。"] = "HTTP 请求",
+    desc: Annotated[str, "节点的描述信息。"] = "发送HTTP请求并获取响应",
+    headers: Annotated[str, "请求头，以JSON字符串格式提供。"] = "",
+    params: Annotated[str, "查询参数，以JSON字符串格式提供。"] = "",
+    authorization_type: Annotated[
+        str, "认证类型。支持 'no-auth', 'bearer', 'api-key', 'basic'。"
+    ] = "no-auth",
     authorization_config: Optional[Dict[str, Any]] = None,
-    body_type: str = "none",
+    body_type: Annotated[
+        str,
+        "请求体类型。支持 'none', 'form-data', 'x-www-form-urlencoded', 'raw-text', 'json', 'xml'。",
+    ] = "none",
     body_data: Optional[List[Any]] = None,
-    ssl_verify: bool = True,
-    max_connect_timeout: int = 0,
-    max_read_timeout: int = 0,
-    max_write_timeout: int = 0,
-    retry_enabled: bool = True,
-    max_retries: int = 3,
-    retry_interval: int = 100,
+    ssl_verify: Annotated[bool, "是否验证SSL证书。"] = True,
+    max_connect_timeout: Annotated[
+        int, "最大连接超时时间（秒）。0表示使用默认值。"
+    ] = 0,
+    max_read_timeout: Annotated[int, "最大读取超时时间（秒）。0表示使用默认值。"] = 0,
+    max_write_timeout: Annotated[int, "最大写入超时时间（秒）。0表示使用默认值。"] = 0,
+    retry_enabled: Annotated[bool, "是否启用重试机制。"] = True,
+    max_retries: Annotated[int, "最大重试次数。"] = 3,
+    retry_interval: Annotated[int, "重试间隔（毫秒）。"] = 100,
 ) -> Dict[str, Any]:
     """
     在工作流中创建一个HTTP请求节点。
     当需要调用外部API、获取网络资源或与其他系统进行HTTP通信时使用此工具。
-
-    Args:
-        node_id (str): 节点的唯一标识符 (例如: "http_request_1")。
-        x_pos (int): 节点在画布上的X坐标。
-        y_pos (int): 节点在画布上的Y坐标。
-        url (str): 请求的目标URL。可以包含变量引用，例如 'https://api.example.com/users/{{#user_node.user_id#}}'。
-        method (str, optional): HTTP请求方法。支持 "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"。默认为 "GET"。
-        title (str, optional): 节点的显示标题。默认为 "HTTP 请求"。
-        desc (str, optional): 节点的描述信息。默认为 "发送HTTP请求并获取响应"。
-        headers (str, optional): 请求头，以JSON字符串格式提供。例如: '{"Content-Type": "application/json", "Authorization": "Bearer {{#token_node.token#}}"}'。
-        params (str, optional): 查询参数，以JSON字符串格式提供。例如: '{"page": "1", "limit": "10"}'。
-        authorization_type (str, optional): 认证类型。支持 "no-auth", "bearer", "api-key", "basic"。默认为 "no-auth"。
-        authorization_config (Dict[str, Any], optional): 认证配置。根据authorization_type提供相应配置。
-        body_type (str, optional): 请求体类型。支持 "none", "form-data", "x-www-form-urlencoded", "raw-text", "json", "xml"。默认为 "none"。
-        body_data (List[Any], optional): 请求体数据。格式取决于body_type。
-        ssl_verify (bool, optional): 是否验证SSL证书。默认为 True。
-        max_connect_timeout (int, optional): 最大连接超时时间（秒）。0表示使用默认值。
-        max_read_timeout (int, optional): 最大读取超时时间（秒）。0表示使用默认值。
-        max_write_timeout (int, optional): 最大写入超时时间（秒）。0表示使用默认值。
-        retry_enabled (bool, optional): 是否启用重试机制。默认为 True。
-        max_retries (int, optional): 最大重试次数。默认为 3。
-        retry_interval (int, optional): 重试间隔（毫秒）。默认为 100。
-
-    Returns:
-        Dict[str, Any]: 代表该HTTP请求节点的字典结构，包含节点信息、观察结果和输出变量引用。
-
     Examples:
         # 简单的GET请求
         create_http_request_node(

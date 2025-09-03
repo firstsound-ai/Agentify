@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from langchain_core.tools import tool
 
@@ -9,35 +9,32 @@ from .type import TemplateVariable
 
 @tool
 def create_template_transform_node(
-    node_id: str,
-    x_pos: int,
-    y_pos: int,
-    template: str,
-    variables: Optional[List[Dict[str, Any]]] = None,
-    title: str = "模板转换",
-    desc: str = "使用Jinja2模板进行数据转换和文本处理",
+    node_id: Annotated[str, "节点的唯一标识符 (例如: 'template_step_1')。"],
+    x_pos: Annotated[int, "节点在画布上的X坐标。"],
+    y_pos: Annotated[int, "节点在画布上的Y坐标。"],
+    template: Annotated[
+        str,
+        "Jinja2模板内容。支持所有Jinja2语法，包括变量替换、循环、条件等。\n\
+示例: '用户输入: {{ user_query }}\n处理结果: {{ result }}'\n\
+示例: '{% for item in items %}{{ item }}\n{% endfor %}'",
+    ],
+    variables: Annotated[
+        Optional[List[Dict[str, Any]]],
+        "输入变量列表。每个变量包含:\n\
+- variable: 变量名，在模板中使用\n\
+- value: 变量引用字符串，例如 '{{#sys.query#}}' 或 '{{#previous_node.result#}}'\n\
+- value_type: 值类型，支持 'string', 'number', 'object', 'array[string]', 'array[number]', 'array[object]'\n\
+示例: [{'variable': 'user_query', 'value': '{{#sys.query#}}', 'value_type': 'string'}]\n\
+",
+    ] = None,
+    title: Annotated[str, "节点的显示标题。默认为 '模板转换'。"] = "模板转换",
+    desc: Annotated[
+        str, "节点的可选描述信息。默认为 '使用Jinja2模板进行数据转换和文本处理'。"
+    ] = "使用Jinja2模板进行数据转换和文本处理",
 ) -> Dict[str, Any]:
     """
     在工作流中创建一个模板转换节点。
     当需要使用Jinja2模板语法对数据进行格式化、转换或文本处理时使用此工具。
-
-    Args:
-        node_id (str): 节点的唯一标识符 (例如: "template_step_1")。
-        x_pos (int): 节点在画布上的X坐标。
-        y_pos (int): 节点在画布上的Y坐标。
-        template (str): Jinja2模板内容。支持所有Jinja2语法，包括变量替换、循环、条件等。
-            示例: "用户输入: {{ user_query }}\n处理结果: {{ result }}"
-            示例: "{% for item in items %}{{ item }}\n{% endfor %}"
-        variables (List[Dict[str, Any]], optional): 输入变量列表。每个变量包含:
-            - variable: 变量名，在模板中使用
-            - value: 变量引用字符串，例如 "{{#sys.query#}}" 或 "{{#previous_node.result#}}"
-            - value_type: 值类型，支持 "string", "number", "object", "array[string]", "array[number]", "array[object]"
-            示例: [{"variable": "user_query", "value": "{{#sys.query#}}", "value_type": "string"}]
-        title (str, optional): 节点的显示标题。默认为 "模板转换"。
-        desc (str, optional): 节点的可选描述信息。默认为 "使用Jinja2模板进行数据转换和文本处理"。
-
-    Returns:
-        Dict[str, Any]: 代表该模板转换节点的字典结构，可用于工作流编排。
     """
     if variables is None:
         variables = []

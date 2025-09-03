@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Annotated, Any, Dict, List
 
 from langchain_core.tools import tool
 
@@ -9,44 +9,35 @@ from .type import EndOutput
 
 @tool
 def create_end_node(
-    node_id: str,
-    x_pos: int,
-    y_pos: int,
-    outputs: List[Dict[str, Any]],
-    title: str = "结束",
-    desc: str = "",
+    node_id: Annotated[str, "节点的唯一标识符 (例如: 'end_1')。"],
+    x_pos: Annotated[int, "节点在画布上的X坐标。"],
+    y_pos: Annotated[int, "节点在画布上的Y坐标。"],
+    outputs: Annotated[
+        List[Dict[str, Any]],
+        "输出变量配置列表。每个字典代表一个输出变量。\n\
+- variable (str): 输出变量名\n\
+- value_selector (str): 变量选择器字符串，例如 '{{#1755411386775.text#}}'\n\
+- value_type (str): 变量类型，默认为 'string'\n\
+示例:\n\
+[\n\
+    {\n\
+        'variable': 'result',\n\
+        'value_selector': '{{#llm_node_1.text#}}',\n\
+        'value_type': 'string'\n\
+    },\n\
+    {\n\
+        'variable': 'score',\n\
+        'value_selector': '{{#analysis_node.score#}}',\n\
+        'value_type': 'number'\n\
+    }\n\
+]",
+    ],
+    title: Annotated[str, "节点的显示标题。默认为 '结束'。"] = "结束",
+    desc: Annotated[str, "节点的可选描述信息。"] = "",
 ) -> Dict[str, Any]:
     """
     在工作流中创建一个结束节点。
     用于标识工作流的结束点，并可以定义输出变量。
-
-    Args:
-        node_id (str): 节点的唯一标识符 (例如: "end_1")。
-        x_pos (int): 节点在画布上的X坐标。
-        y_pos (int): 节点在画布上的Y坐标。
-        outputs (List[Dict[str, Any]]): 输出变量配置列表。每个字典代表一个输出变量。
-            - variable (str): 输出变量名
-            - value_selector (str): 变量选择器字符串，例如 '{{#1755411386775.text#}}'
-            - value_type (str): 变量类型，默认为 "string"
-
-            示例:
-            [
-                {
-                    "variable": "result",
-                    "value_selector": "{{#llm_node_1.text#}}",
-                    "value_type": "string"
-                },
-                {
-                    "variable": "score",
-                    "value_selector": "{{#analysis_node.score#}}",
-                    "value_type": "number"
-                }
-            ]
-        title (str, optional): 节点的显示标题。默认为 "结束"。
-        desc (str, optional): 节点的可选描述信息。
-
-    Returns:
-        Dict[str, Any]: 代表该结束节点的字典结构。
     """
 
     # 解析输出变量配置
