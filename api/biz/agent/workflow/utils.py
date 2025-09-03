@@ -53,7 +53,10 @@ def create_workflow_edges(
                 continue
 
             target_type = node_types[target_node_id]
-            source_handle = "source"
+            # BUG: source的类型不匹配
+            source_handle = (
+                "source"  # 不一定都是source，可能是true/false等，需要再次检查
+            )
             target_handle = "target"
 
             # 创建边定义
